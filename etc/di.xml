@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Wexo\Webshipper\Api\Carrier\WebshipperInterface" type="Wexo\Webshipper\Model\Carrier\Webshipper"/>
+    <preference for="Wexo\Webshipper\Api\Data\ParcelShopInterface" type="Wexo\Webshipper\Model\Data\ParcelShop"/>
+
+    <type name="Wexo\Shipping\Model\ComponentManagement">
+        <arguments>
+            <argument name="carriers" xsi:type="array">
+                <item name="webshipper" xsi:type="object">Wexo\Webshipper\Api\Carrier\WebshipperInterface</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Wexo\Webshipper\Model\MethodType\ParcelShop">
+        <arguments>
+            <argument name="parcelShopClass" xsi:type="string">Wexo\Webshipper\Api\Data\ParcelShopInterface</argument>
+        </arguments>
+    </type>
+    <type name="Wexo\Webshipper\Model\Carrier\Webshipper">
+        <arguments>
+            <argument name="defaultMethodTypeHandler" xsi:type="object">Wexo\Webshipper\Model\MethodType\Address</argument>
+            <argument name="methodTypeHandlers" xsi:type="array">
+                <item name="PICKUP_PARCEL" xsi:type="array">
+                    <item name="label" xsi:type="string">Pickup Parcel</item>
+                    <item name="type" xsi:type="object">Wexo\Webshipper\Model\MethodType\ParcelShop</item>
+                </item>
+                <item name="parcelshop" xsi:type="array">
+                    <item name="label" xsi:type="string">Parcel Shop</item>
+                    <item name="type" xsi:type="object">Wexo\Webshipper\Model\MethodType\ParcelShop</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>
