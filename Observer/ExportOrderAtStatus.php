@@ -50,32 +50,33 @@ class ExportOrderAtStatus implements ObserverInterface
                 );
                 return;
             }
-            if ($orderStatus === $exportAtOrderStatus) {
-                $this->api->request(function ($client) use ($order) {
-                    $data = [
-                        'data' => [
-                            'type' => 'bulk_import_orders',
-                            'attributes' => [
-                                'ids' => [$order->getIncrementId()],
-                                'order_channel_id' => $this->config->getOrderChannelId()
-                            ]
+            $this->api->request(function ($client) use ($order) {
+                $data = [
+                    'data' => [
+                        'type' => 'bulk_import_orders',
+                        'attributes' => [
+                            'ids' => [$order->getIncrementId()],
+                            'order_channel_id' => $this->config->getOrderChannelId()
                         ]
-                    ];
-                    return $client->post('/v2/bulk_import_orders', [
-                        'json' => $data,
-                        'headers' => [
-                            'Accept' => 'application/vnd.api+json',
-                            'Content-Type' => 'application/vnd.api+json'
-                        ]
-                    ]);
-                }, function ($response, $content) {
-                    $this->logger->debug(
-                        'Webshipper Bulk Import Response: ', [
-                            'content' => $content
-                        ]
-                    );
-                });
-            }
+                    ]
+                ];
+                $this->logger->debug('Webshipper Bulk Import Order Request', [
+                    'data' => $data
+                ]);
+                return $client->post('/v2/bulk_import_orders', [
+                    'json' => $data,
+                    'headers' => [
+                        'Accept' => 'application/vnd.api+json',
+                        'Content-Type' => 'application/vnd.api+json'
+                    ]
+                ]);
+            }, function ($response, $content) {
+                $this->logger->debug(
+                    'Webshipper Bulk Import Response: ', [
+                        'content' => $content
+                    ]
+                );
+            });
         } catch (\Throwable $t) {
             $this->logger->debug(
                 'Webhipper Bulk Import Error',
