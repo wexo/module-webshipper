@@ -20,10 +20,6 @@
         <arguments>
             <argument name="defaultMethodTypeHandler" xsi:type="object">Wexo\Webshipper\Model\MethodType\Address</argument>
             <argument name="methodTypeHandlers" xsi:type="array">
-                <item name="PICKUP_PARCEL" xsi:type="array">
-                    <item name="label" xsi:type="string">Pickup Parcel</item>
-                    <item name="type" xsi:type="object">Wexo\Webshipper\Model\MethodType\ParcelShop</item>
-                </item>
                 <item name="parcelshop" xsi:type="array">
                     <item name="label" xsi:type="string">Parcel Shop</item>
                     <item name="type" xsi:type="object">Wexo\Webshipper\Model\MethodType\ParcelShop</item>

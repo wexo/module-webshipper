@@ -55,4 +55,9 @@ class Config
     {
         return $this->getConfigurationToken()['token'] ?? false;
     }
+
+    public function getExportOrderAtStatus()
+    {
+        return $this->scopeConfig->getValue('carriers/webshipper/export_order_at_status') ?? false;
+    }
 }
