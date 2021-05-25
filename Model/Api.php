@@ -113,7 +113,7 @@ class Api
 
     public function getShippingRateIdFromMethod($method)
     {
-        return (int)explode('_', $method)[1] ?? 0;
+        return (int)explode('_', $method)[0] ?? 0;
     }
 
     /**
