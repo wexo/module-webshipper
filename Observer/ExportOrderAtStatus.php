@@ -72,7 +72,8 @@ class ExportOrderAtStatus implements ObserverInterface
                 ]);
             }, function ($response, $content) {
                 $this->logger->debug(
-                    'Webshipper Bulk Import Response: ', [
+                    'Webshipper Bulk Import Response: ',
+                    [
                         'content' => $content
                     ]
                 );

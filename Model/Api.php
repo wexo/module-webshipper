@@ -12,6 +12,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Base64Json;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
+use Psr\Log\LoggerInterface;
 use Wexo\Webshipper\Api\Data\ParcelShopInterface;
 
 class Api
@@ -49,14 +50,20 @@ class Api
      * @var Base64Json
      */
     private $base64Json;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
+     * Api constructor.
      * @param ClientFactory $clientFactory
      * @param UrlInterface $url
      * @param Json $jsonSerializer
      * @param ObjectFactory $objectFactory
-     * @param null $appUid
-     * @param null $apiKey
+     * @param Config $config
+     * @param LoggerInterface $logger
+     * @param Base64Json $base64Json
      */
     public function __construct(
         ClientFactory $clientFactory,
@@ -64,6 +71,7 @@ class Api
         Json $jsonSerializer,
         ObjectFactory $objectFactory,
         \Wexo\Webshipper\Model\Config $config,
+        LoggerInterface $logger,
         Base64Json $base64Json
     ) {
         $this->clientFactory = $clientFactory;
@@ -72,6 +80,7 @@ class Api
         $this->objectFactory = $objectFactory;
         $this->config = $config;
         $this->base64Json = $base64Json;
+        $this->logger = $logger;
     }
 
     /**
@@ -94,6 +103,12 @@ class Api
                     ]
                 ]
             ];
+            $this->logger->debug(
+                'Webshipper drop_point_locator Preflight',
+                [
+                    'body' => $data
+                ]
+            );
             return $client->post(
                 "/v2/drop_point_locators",
                 [
@@ -105,6 +120,7 @@ class Api
                 ]
             );
         }, function (Response $response, $content) {
+            $this->logger->debug('Webshipper drop_point_locator Resposne', ['content' => $content]);
             return isset($content['data']['attributes']['drop_points'])
                 ? $this->mapParcelShops($content['data']['attributes']['drop_points'])
                 : false;
@@ -123,12 +139,20 @@ class Api
      */
     public function request(callable $func, callable $transformer = null)
     {
-        /** @var Response $response */
-        $response = $func($this->getClient());
+        try {
+            /** @var Response $response */
+            $response = $func($this->getClient());
 
-        if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-            $content = $this->jsonSerializer->unserialize($response->getBody()->__toString());
-            return $transformer === null ? $content : $transformer($response, $content);
+            if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
+                $content = $this->jsonSerializer->unserialize($response->getBody()->__toString());
+                return $transformer === null ? $content : $transformer($response, $content);
+            }
+        } catch (ClientException $exception) {
+            $body = $exception->getResponse()->getBody();
+            $this->logger->error($exception->getMessage(), [
+                'body' => $body
+            ]);
+            throw $exception;
         }
 
         return false;

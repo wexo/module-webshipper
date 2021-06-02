@@ -9,6 +9,7 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Quote\Api\Data\ShippingMethodInterface;
+use Wexo\IntegrationBase\Api\Adapter\Magento\ProductRepositoryInterface;
 use Wexo\Shipping\Api\Data\RateInterface;
 use Wexo\Shipping\Api\Data\RateInterfaceFactory;
 use Magento\Quote\Model\Quote\Address\RateRequest;
@@ -48,6 +49,14 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
      * @var Json
      */
     private $json;
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
+    private $customerSession;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -61,6 +70,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         RateInterfaceFactory $rateFactory,
         \Wexo\Webshipper\Model\Config $config,
         Json $json,
+        \Magento\Customer\Model\Session $customerSession,
         MethodTypeHandlerInterface $defaultMethodTypeHandler = null,
         array $methodTypeHandlers = [],
         array $data = []
@@ -81,6 +91,8 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         $this->rateFactory = $rateFactory;
         $this->config = $config;
         $this->json = $json;
+        $this->customerSession = $customerSession;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -147,6 +159,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
 
     public function collectRates(RateRequest $request)
     {
+        $this->_logger->debug('Webshipper collectRates');
         $result = parent::collectRates($request);
 
         $shippingRates = $this->fetchWebshipperRates($request);
@@ -198,7 +211,9 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             foreach ($allItems as $item) {
                 $items[] = [
                     'quantity' => $item->getQty(),
-                    'sku' => $item->getSku()
+                    'description' => $item->getName(),
+                    'sku' => $item->getSku(),
+                    'additional_attributes' => $this->mapAdditionalAttributes($item)
                 ];
             }
             $data = [
@@ -207,15 +222,29 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
                     "attributes" => [
                         "order_channel_id" => $this->config->getOrderChannelId(),
                         "price" => $request->getPackageValue(),
+//                        "currency" => $this->storeManager->getStore()->getCurrentCurrency()->getCode(),
                         "weight" => $request->getPackageWeight(),
+                        "weight_unit" => $this->config->getWeightUnit() ?? 'g',
+                        "sender_address" => [
+                            'country_code' => $this->config->getStoreCountry()
+                        ],
                         "delivery_address" => [
                             "zip" => $request->getDestPostcode(),
                             "country_code" => $request->getDestCountryId()
                         ],
-                        "items" => $items
+                        "items" => $items,
+                        "additional_attributes" => [
+                            'customer_group_id' => $this->customerSession->getCustomerGroupId()
+                        ]
                     ]
                 ]
             ];
+            $this->_logger->debug(
+                'Webshipper rate_quotes Preflight',
+                [
+                    'body' => $data
+                ]
+            );
             return $client->post(
                 "/v2/rate_quotes",
                 [
@@ -227,8 +256,26 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
                 ]
             );
         }, function ($response, $content) {
+            $this->_logger->debug(
+                'Webshipper rate_quotes response',
+                [
+                    'content' => $content
+                ]
+            );
             return $content;
         });
+    }
+
+    public function mapAdditionalAttributes(\Magento\Quote\Model\Quote\Item $item)
+    {
+        $product = $item->getProduct();
+        $attributes = $this->config->getProductAttributes() ?? [];
+        $attributes = explode(',', $attributes);
+        $data = [];
+        foreach ($attributes as $attributeCode) {
+            $data[$attributeCode] = $product->getData($attributeCode);
+        }
+        return $data;
     }
 
     public function createRateFromWebshipperRate($data)
