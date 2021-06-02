@@ -3,6 +3,7 @@
 namespace Wexo\Webshipper\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\Serializer\Base64Json;
 
 class Config
@@ -58,6 +59,35 @@ class Config
 
     public function getExportOrderAtStatus()
     {
-        return $this->scopeConfig->getValue('carriers/webshipper/export_order_at_status') ?? false;
+        $value = $this->scopeConfig->getValue(
+            'carriers/webshipper/export_order_at_status',
+            ScopeInterface::SCOPE_STORE
+        );
+        return $value ?? false;
     }
+
+    public function getWeightUnit()
+    {
+        return $this->scopeConfig->getValue(
+            'carriers/webshipper/product_weight_unit',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getProductAttributes()
+    {
+        return $this->scopeConfig->getValue(
+            'carriers/webshipper/product_attributes',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getStoreCountry(): string
+    {
+        return $this->scopeConfig->getValue(
+                'general/store_information/country_id',
+                ScopeInterface::SCOPE_STORE
+            ) ?? '';
+    }
+
 }
