@@ -269,7 +269,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     public function mapAdditionalAttributes(\Magento\Quote\Model\Quote\Item $item)
     {
         $product = $item->getProduct();
-        $attributes = $this->config->getProductAttributes() ?? [];
+        $attributes = $this->config->getProductAttributes() ?? "";
         $attributes = explode(',', $attributes);
         $data = [];
         foreach ($attributes as $attributeCode) {
