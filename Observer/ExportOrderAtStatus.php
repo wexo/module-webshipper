@@ -36,7 +36,7 @@ class ExportOrderAtStatus implements ObserverInterface
         try {
             $order = $observer->getEvent()->getOrder();
             $exportAtOrderStatus = $this->config->getExportOrderAtStatus() ?? [];
-            if (empty($exportAtOrderStatus)) {
+            if (empty($exportAtOrderStatus) && is_array($exportAtOrderStatus)) {
                 return false;
             }
 
