@@ -3,12 +3,14 @@
 namespace Wexo\Webshipper\Model\Carrier;
 
 use Exception;
+use Magento\Customer\Model\Session;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Quote\Api\Data\ShippingMethodInterface;
+use Magento\Quote\Model\Quote\Item;
 use Wexo\IntegrationBase\Api\Adapter\Magento\ProductRepositoryInterface;
 use Wexo\Shipping\Api\Data\RateInterface;
 use Wexo\Shipping\Api\Data\RateInterfaceFactory;
@@ -26,6 +28,7 @@ use Wexo\Shipping\Model\RateManagement;
 use Wexo\Webshipper\Api\Carrier\WebshipperInterface;
 use Wexo\Webshipper\Api\Data\ParcelShopInterface;
 use Wexo\Webshipper\Model\Api;
+use Wexo\Webshipper\Model\Config;
 
 class Webshipper extends AbstractCarrier implements WebshipperInterface
 {
@@ -42,7 +45,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
      */
     private $rateFactory;
     /**
-     * @var \Wexo\Webshipper\Model\Config
+     * @var Config
      */
     private $config;
     /**
@@ -50,7 +53,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
      */
     private $json;
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
     private $customerSession;
     /**
@@ -68,9 +71,9 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         Repository $assetRepository,
         StoreManagerInterface $storeManager,
         RateInterfaceFactory $rateFactory,
-        \Wexo\Webshipper\Model\Config $config,
+        Config $config,
         Json $json,
-        \Magento\Customer\Model\Session $customerSession,
+        Session $customerSession,
         MethodTypeHandlerInterface $defaultMethodTypeHandler = null,
         array $methodTypeHandlers = [],
         array $data = []
@@ -150,7 +153,11 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     public function getImageUrl(ShippingMethodInterface $shippingMethod, $rate, $typeHandler)
     {
         if (isset(static::$logos[$shippingMethod->getMethodCode()])) {
-            return static::$logos[$shippingMethod->getMethodCode()];
+            if ($this->config->showCarrierLogo()) {
+                return static::$logos[$shippingMethod->getMethodCode()];
+            } else {
+                return '#';
+            }
         }
         return $this->assetRepository->createAsset('Wexo_Webshipper::images/webshipper.png', [
             'area' => Area::AREA_FRONTEND
@@ -266,7 +273,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         });
     }
 
-    public function mapAdditionalAttributes(\Magento\Quote\Model\Quote\Item $item)
+    public function mapAdditionalAttributes(Item $item)
     {
         $product = $item->getProduct();
         $attributes = $this->config->getProductAttributes() ?? "";

@@ -35,8 +35,12 @@ class ExportOrderAtStatus implements ObserverInterface
     {
         try {
             $order = $observer->getEvent()->getOrder();
-            $exportAtOrderStatus = $this->config->getExportOrderAtStatus();
-            $orderStatusIsValid = $order->getStatus() !== $exportAtOrderStatus;
+            $exportAtOrderStatus = $this->config->getExportOrderAtStatus() ?? [];
+            if (empty($exportAtOrderStatus)) {
+                return false;
+            }
+
+            $orderStatusIsValid = in_array($order->getStatus(), $exportAtOrderStatus);
             $validShippingMethod = strpos($order->getShippingMethod(), 'webshipper') !== false;
             if ($orderStatusIsValid || !$validShippingMethod) {
                 $this->logger->debug(
@@ -48,7 +52,7 @@ class ExportOrderAtStatus implements ObserverInterface
                         'valid_shipping_method' => $validShippingMethod
                     ]
                 );
-                return;
+                return false;
             }
             $this->api->request(function ($client) use ($order) {
                 $data = [

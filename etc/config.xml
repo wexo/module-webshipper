@@ -9,6 +9,8 @@
                 <name>Webshipper</name>
                 <title>Webshipper</title>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
+                <show_carrier_logo>1</show_carrier_logo>
+                <product_weight_unit>g</product_weight_unit>
             </webshipper>
         </carriers>
     </default>
