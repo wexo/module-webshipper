@@ -66,6 +66,14 @@ class Config
         return $value ?? false;
     }
 
+    public function showCarrierLogo()
+    {
+        return $this->scopeConfig->getValue(
+            'carriers/webshipper/show_carrier_logo',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
     public function getWeightUnit()
     {
         return $this->scopeConfig->getValue(
