@@ -31,7 +31,10 @@ class Config
     public function getConfigurationToken()
     {
         if ($this->configurationToken === null) {
-            $configurationToken = $this->scopeConfig->getValue('carriers/webshipper/configuration_token');
+            $configurationToken = $this->scopeConfig->getValue(
+                'carriers/webshipper/configuration_token',
+                ScopeInterface::SCOPE_STORE
+            );
             $this->configurationToken = $this->base64Json->unserialize($configurationToken);
         }
         return $this->configurationToken;
