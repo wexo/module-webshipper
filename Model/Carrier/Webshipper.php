@@ -5,6 +5,7 @@ namespace Wexo\Webshipper\Model\Carrier;
 use Exception;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\CacheInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -60,6 +61,10 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
      * @var StoreManagerInterface
      */
     private $storeManager;
+    /**
+     * @var CacheInterface 
+     */
+    protected $cache;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -74,6 +79,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         Config $config,
         Json $json,
         Session $customerSession,
+        CacheInterface $cache,
         MethodTypeHandlerInterface $defaultMethodTypeHandler = null,
         array $methodTypeHandlers = [],
         array $data = []
@@ -91,6 +97,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             $methodTypeHandlers,
             $data
         );
+        $this->cache = $cache;
         $this->rateFactory = $rateFactory;
         $this->config = $config;
         $this->json = $json;
@@ -169,9 +176,29 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         $this->_logger->debug('Webshipper collectRates');
         $result = parent::collectRates($request);
 
-        $shippingRates = $this->fetchWebshipperRates($request);
-        if (!isset($shippingRates['data']['attributes']['quotes'])) {
-            return $result;
+
+        $cacheKeyData = $request->getData();
+        unset($cacheKeyData['all_items']);
+        unset($cacheKeyData['base_currency']);
+        unset($cacheKeyData['package_currency']);
+        unset($cacheKeyData['limit_carrier']);
+        unset($cacheKeyData['condition_name']);
+        unset($cacheKeyData['dest_region_code']);
+        $cacheKeyData['webshipper_order_channel_id'] = $this->config->getOrderChannelId();
+        foreach($request->getAllItems() as $item){
+            $cacheKeyData['items'][]= $item->getSku() . '-'.$item->getQty();
+        }
+        $cacheKey = hash('sha256', json_encode($cacheKeyData));
+
+        $shippingRates = $this->cache->load($cacheKey);
+        if(empty($shippingRates)){
+            $shippingRates = $this->fetchWebshipperRates($request);
+            if (!isset($shippingRates['data']['attributes']['quotes'])) {
+                return $result;
+            }
+            $this->cache->save(json_encode($shippingRates),$cacheKey,['cms_block']);
+        }else{
+            $shippingRates = json_decode($shippingRates,true);
         }
 
         foreach ($shippingRates['data']['attributes']['quotes'] as $shippingRate) {
