@@ -188,25 +188,18 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         foreach($request->getAllItems() as $item){
             $cacheKeyData['items'][]= $item->getSku() . '-'.$item->getQty();
         }
-        $this->_logger->error('CacheKeyData',[
-            'cache' => $cacheKeyData
-        ]);
         $cacheKey = hash('sha256', json_encode($cacheKeyData));
 
         $shippingRates = $this->cache->load($cacheKey);
         if(empty($shippingRates)){
-            $this->_logger->error('Cache MISS');
             $shippingRates = $this->fetchWebshipperRates($request);
             if (!isset($shippingRates['data']['attributes']['quotes'])) {
                 return $result;
             }
             $this->cache->save(json_encode($shippingRates),$cacheKey,['cms_block']);
         }else{
-            $this->_logger->error('Cache HIT');
             $shippingRates = json_decode($shippingRates,true);
         }
-
-
 
         foreach ($shippingRates['data']['attributes']['quotes'] as $shippingRate) {
             $rate = $this->createRateFromWebshipperRate($shippingRate);
