@@ -214,6 +214,9 @@ class Api
     {
         return array_map(function ($parcelShop) {
             $parcelShopData = [];
+            if(!isset($parcelShop['opening_hours'])) {
+                $parcelShop['opening_hours'] = [];
+            }
             foreach ($parcelShop['opening_hours'] as $key => $item) {
                 $item['day'] = $this->dayMapper[$item['day']];
                 $parcelShop['opening_hours'][$key] = $item;
@@ -223,14 +226,14 @@ class Api
             $parcelShopObject = $this->objectFactory->create(ParcelShopInterface::class, [
                 'data' => $parcelShopData
             ]);
-            $parcelShopObject->setNumber($parcelShop['drop_point_id']);
-            $parcelShopObject->setCompanyName($parcelShop['name']);
-            $parcelShopObject->setStreetName($parcelShop['address_1']);
-            $parcelShopObject->setZipCode($parcelShop['zip']);
-            $parcelShopObject->setCity($parcelShop['city']);
-            $parcelShopObject->setCountryCode($parcelShop['country_code']);
-            $parcelShopObject->setLongitude($parcelShop['longitude']);
-            $parcelShopObject->setLatitude($parcelShop['latitude']);
+            $parcelShopObject->setNumber($parcelShop['drop_point_id'] ?? '');
+            $parcelShopObject->setCompanyName($parcelShop['name'] ?? '');
+            $parcelShopObject->setStreetName($parcelShop['address_1'] ?? '');
+            $parcelShopObject->setZipCode($parcelShop['zip'] ?? '');
+            $parcelShopObject->setCity($parcelShop['city'] ?? '');
+            $parcelShopObject->setCountryCode($parcelShop['country_code'] ?? '');
+            $parcelShopObject->setLongitude($parcelShop['longitude'] ?? '');
+            $parcelShopObject->setLatitude($parcelShop['latitude'] ?? '');
             $parcelShopObject->setOpeningHours([$parcelShop['opening_hours']]);
             return $parcelShopObject;
         }, $parcelShops);
