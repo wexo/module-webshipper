@@ -260,7 +260,8 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
                         "weight" => $request->getPackageWeight(),
                         "weight_unit" => $this->config->getWeightUnit() ?? 'g',
                         "sender_address" => [
-                            'country_code' => $this->config->getStoreCountry()
+                            "zip" => $this->config->getStoreZip(),
+                            "country_code" => $this->config->getStoreCountry()
                         ],
                         "delivery_address" => [
                             "zip" => $request->getDestPostcode(),

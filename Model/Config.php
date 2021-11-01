@@ -101,4 +101,11 @@ class Config
             ) ?? '';
     }
 
+    public function getStoreZip(): string
+    {
+        return $this->scopeConfig->getValue(
+                'general/store_information/postcode',
+                ScopeInterface::SCOPE_STORE
+            ) ?? '';
+    }
 }
