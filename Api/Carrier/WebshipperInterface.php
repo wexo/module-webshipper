@@ -12,7 +12,8 @@ interface WebshipperInterface extends CarrierInterface
      * @param string $country
      * @param string $method
      * @param string $postcode
+     * @param string $shipping_address
      * @return \Wexo\Webshipper\Api\Data\ParcelShopInterface[]
      */
-    public function getParcelShops($country, $method = '', $postcode = null);
+    public function getParcelShops($country, $method = '', $postcode = null, $shipping_address = null);
 }

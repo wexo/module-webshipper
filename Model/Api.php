@@ -86,11 +86,15 @@ class Api
     /**
      * @param $countryCode
      * @param $postalCode
+     * @param $shipping_address
      * @return array|false
      */
-    public function getParcelShops($countryCode, $method, $postalCode)
+    public function getParcelShops($countryCode, $method, $postalCode, $shipping_address)
     {
-        return $this->request(function (Client $client) use ($countryCode, $method, $postalCode) {
+        return $this->request(function (Client $client) use ($countryCode, $method, $postalCode, $shipping_address) {
+            $city = $shipping_address === null ? '' : $shipping_address['city'] ?? '';
+            $company = $shipping_address === null ? '' : $shipping_address['company'] ?? '';
+            $street = $shipping_address === null ? '' : $shipping_address['street'][0] ?? '';
             $data = [
                 'data' => [
                     'type' => 'drop_point_locators',
@@ -98,6 +102,10 @@ class Api
                         'shipping_rate_id' => $this->getShippingRateIdFromMethod($method),
                         'delivery_address' => [
                             'zip' => $postalCode,
+                            'city' => $city,
+                            'address_1' => $street,
+                            'street' => $street,
+                            'company' => $company,
                             'country_code' => $countryCode
                         ]
                     ]

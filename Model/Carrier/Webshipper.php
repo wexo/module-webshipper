@@ -126,14 +126,22 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     /**
      * @inheirtDoc
      */
-    public function getParcelShops($country, $method = '', $postcode = null)
+    public function getParcelShops($country, $method = '', $postcode = null, $shipping_address = null)
     {
         if (empty($postcode)) {
             return [];
         }
 
+        if (!empty($shipping_address)) {
+            try {
+                $shipping_address = $this->json->unserialize($shipping_address);
+            } catch (\InvalidArgumentException $e) {
+                $shipping_address = null;
+            }
+        }
+
         try {
-            $parcelShops = $this->getWebshipperApi()->getParcelShops($country, $method, $postcode);
+            $parcelShops = $this->getWebshipperApi()->getParcelShops($country, $method, $postcode, $shipping_address);
         } catch (Exception $e) {
             return [];
         }
@@ -175,7 +183,6 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     {
         $this->_logger->debug('Webshipper collectRates');
         $result = parent::collectRates($request);
-
 
         $cacheKeyData = $request->getData();
         unset($cacheKeyData['all_items']);
@@ -265,7 +272,9 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
                         ],
                         "delivery_address" => [
                             "zip" => $request->getDestPostcode(),
-                            "country_code" => $request->getDestCountryId()
+                            "city" => $request->getDestCity(),
+                            "street" => $request->getDestStreet(),
+                            "country_code" => $request->getDestCountryId(),
                         ],
                         "items" => $items,
                         "additional_attributes" => [

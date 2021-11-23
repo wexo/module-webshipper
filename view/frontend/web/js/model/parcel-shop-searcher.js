@@ -17,6 +17,7 @@ define([
             country: shippingCountryId,
             postcode: wexoShippingData.postcode,
             method: quote.shippingMethod().method_code,
+            shipping_address: JSON.stringify(quote.shippingAddress()),
             cache: true
         })).always(function() {
             currentRequest = null;
