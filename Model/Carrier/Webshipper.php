@@ -199,7 +199,12 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
 
         $shippingRates = $this->cache->load($cacheKey);
         if(empty($shippingRates)){
-            $shippingRates = $this->fetchWebshipperRates($request);
+            try{
+                $shippingRates = $this->fetchWebshipperRates($request);
+            } catch(\Exception $e){
+                $this->_logger->error('Webshipper rateQuotes Exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                return $result;
+            }
             if (!isset($shippingRates['data']['attributes']['quotes'])) {
                 return $result;
             }
