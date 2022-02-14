@@ -171,7 +171,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             if ($this->config->showCarrierLogo()) {
                 return static::$logos[$shippingMethod->getMethodCode()];
             } else {
-                return '#';
+                return '';
             }
         }
         return $this->assetRepository->createAsset('Wexo_Webshipper::images/webshipper.png', [
