@@ -332,7 +332,6 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     {
         $this->config->updateAddressFromConfig($attributes, 'sender_address');
         $this->config->updateAddressFromConfig($attributes, 'delivery_address');
-        $this->config->updateAddressFromConfig($attributes, 'billing_address');
         $this->config->updateOrderFromConfig($attributes);
         return $attributes;
     }

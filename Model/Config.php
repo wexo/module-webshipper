@@ -255,7 +255,7 @@ class Config
 
     public function updateAddressFromConfig(&$attributes, $attribute)
     {
-        $attributeValue = $attributes[$attribute];
+        $attributeValue = isset($attributes[$attribute]) ? $attributes[$attribute] : [];
         $attributeValueMapper = $this->getMapper($attribute);
         foreach ($attributeValueMapper as $mapping) {
             $webshipperValue = $this->resolveWebshipperValue($mapping);
