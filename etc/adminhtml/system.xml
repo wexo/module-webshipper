@@ -70,6 +70,64 @@
                     <label>Additional Product Data sent when filtering Rate Quotes</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
                 </field>
+            
+                <field id="sender_address"
+                       translate="label"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Sender Address Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\SenderAddress\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\SenderAddress\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#shipping_addresses'>Webshipper Address Documentation</a>]]></comment>
+                </field>
+                <field id="delivery_address"
+                       translate="label"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Delivery Address Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\DeliveryAddress\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\DeliveryAddress\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#shipping_addresses'>Webshipper Address Documentation</a>]]></comment>
+                </field>
+                <field id="billing_address"
+                       translate="label"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Billing Address Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\BillingAddress\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\BillingAddress\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#shipping_addresses'>Webshipper Address Documentation</a>]]></comment>
+                </field>
+                <field id="order"
+                       translate="label"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Additional Order Attributes Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\Order\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\Order\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#order'>Webshipper Order Documentation</a>]]></comment>
+                </field>
+                <!--
+                <field id="order_line_additional_attributes"
+                       translate="label"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Additional Order Line Attributes Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\OrderLine\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\OrderLine\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#order_lines'>Webshipper Order Line Documentation</a>]]></comment>
+                </field>
+                -->
             </group>
         </section>
     </system>

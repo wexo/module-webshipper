@@ -66,6 +66,11 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
      */
     protected $cache;
 
+    /**
+     * @param \Magento\Checkout\Model\Session
+     */
+    private $checkoutSession;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         ErrorFactory $rateErrorFactory,
@@ -80,6 +85,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         Json $json,
         Session $customerSession,
         CacheInterface $cache,
+        \Magento\Checkout\Model\Session $checkoutSession,
         MethodTypeHandlerInterface $defaultMethodTypeHandler = null,
         array $methodTypeHandlers = [],
         array $data = []
@@ -98,6 +104,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             $data
         );
         $this->cache = $cache;
+        $this->checkoutSession = $checkoutSession;
         $this->rateFactory = $rateFactory;
         $this->config = $config;
         $this->json = $json;
@@ -192,25 +199,27 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         unset($cacheKeyData['condition_name']);
         unset($cacheKeyData['dest_region_code']);
         $cacheKeyData['webshipper_order_channel_id'] = $this->config->getOrderChannelId();
-        foreach($request->getAllItems() as $item){
-            $cacheKeyData['items'][]= $item->getSku() . '-'.$item->getQty();
+        foreach ($request->getAllItems() as $item) {
+            $cacheKeyData['items'][] = $item->getSku() . '-' . $item->getQty();
         }
         $cacheKey = hash('sha256', json_encode($cacheKeyData));
 
         $shippingRates = $this->cache->load($cacheKey);
-        if(empty($shippingRates)){
-            try{
+        if (empty($shippingRates)) {
+            $this->_logger->debug('Webshipper collectRates cache:miss');
+            try {
                 $shippingRates = $this->fetchWebshipperRates($request);
-            } catch(\Exception $e){
+            } catch (\Exception $e) {
                 $this->_logger->error('Webshipper rateQuotes Exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
                 return $result;
             }
             if (!isset($shippingRates['data']['attributes']['quotes'])) {
                 return $result;
             }
-            $this->cache->save(json_encode($shippingRates),$cacheKey,['cms_block']);
-        }else{
-            $shippingRates = json_decode($shippingRates,true);
+            $this->cache->save(json_encode($shippingRates), $cacheKey, ['cms_block']);
+        } else {
+            $this->_logger->debug('Webshipper collectRates cache:hit');
+            $shippingRates = json_decode($shippingRates, true);
         }
 
         foreach ($shippingRates['data']['attributes']['quotes'] as $shippingRate) {
@@ -255,37 +264,40 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             $allItems = $request->getAllItems();
             $items = [];
             foreach ($allItems as $item) {
-                $items[] = [
+                $orderLine = [
                     'quantity' => $item->getQty(),
                     'description' => $item->getName(),
                     'sku' => $item->getSku(),
                     'additional_attributes' => $this->mapAdditionalAttributes($item)
                 ];
+                // $this->config->updateOrderLinesFromConfig($orderLine);
+                $items[] = $orderLine;
             }
+            $attributes = [
+                "order_channel_id" => $this->config->getOrderChannelId(),
+                "price" => $request->getPackageValue(),
+                "weight" => $request->getPackageWeight(),
+                "weight_unit" => $this->config->getWeightUnit() ?? 'g',
+                "sender_address" => [
+                    "zip" => $this->config->getStoreZip(),
+                    "country_code" => $this->config->getStoreCountry()
+                ],
+                "delivery_address" => [
+                    "zip" => $request->getDestPostcode(),
+                    "city" => $request->getDestCity(),
+                    "street" => $request->getDestStreet(),
+                    "country_code" => $request->getDestCountryId(),
+                ],
+                "items" => $items,
+                "additional_attributes" => [
+                    'customer_group_id' => $this->customerSession->getCustomerGroupId()
+                ]
+            ];
+            $attributes = $this->transformAttributesFromConfigMapping($attributes);
             $data = [
                 "data" => [
                     "type" => "rate_quotes",
-                    "attributes" => [
-                        "order_channel_id" => $this->config->getOrderChannelId(),
-                        "price" => $request->getPackageValue(),
-//                        "currency" => $this->storeManager->getStore()->getCurrentCurrency()->getCode(),
-                        "weight" => $request->getPackageWeight(),
-                        "weight_unit" => $this->config->getWeightUnit() ?? 'g',
-                        "sender_address" => [
-                            "zip" => $this->config->getStoreZip(),
-                            "country_code" => $this->config->getStoreCountry()
-                        ],
-                        "delivery_address" => [
-                            "zip" => $request->getDestPostcode(),
-                            "city" => $request->getDestCity(),
-                            "street" => $request->getDestStreet(),
-                            "country_code" => $request->getDestCountryId(),
-                        ],
-                        "items" => $items,
-                        "additional_attributes" => [
-                            'customer_group_id' => $this->customerSession->getCustomerGroupId()
-                        ]
-                    ]
+                    "attributes" => $attributes
                 ]
             ];
             $this->_logger->debug(
@@ -313,6 +325,16 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
             );
             return $content;
         });
+    }
+
+
+    public function transformAttributesFromConfigMapping(&$attributes)
+    {
+        $this->config->updateAddressFromConfig($attributes, 'sender_address');
+        $this->config->updateAddressFromConfig($attributes, 'delivery_address');
+        $this->config->updateAddressFromConfig($attributes, 'billing_address');
+        $this->config->updateOrderFromConfig($attributes);
+        return $attributes;
     }
 
     public function mapAdditionalAttributes(Item $item)
