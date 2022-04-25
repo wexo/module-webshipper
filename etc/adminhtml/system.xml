@@ -104,7 +104,7 @@
                     <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\BillingAddress\FrontendModel</frontend_model>
                     <comment><![CDATA[<a href='https://docs.webshipper.io/#shipping_addresses'>Webshipper Address Documentation</a>]]></comment>
                 </field>
-                <field id="order_additional_attributes"
+                <field id="order"
                        translate="label"
                        sortOrder="20"
                        showInDefault="1"
