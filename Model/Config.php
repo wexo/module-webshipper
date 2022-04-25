@@ -190,9 +190,9 @@ class Config
             case 'store':
                 return $this->resolveMagentoStoreValue($field);
                 break;
-            case 'product':
-                return $this->resolveMagentoProductValue($field);
-                break;
+            // case 'product':
+            //     return $this->resolveMagentoProductValue($field);
+            //     break;
             case 'order':
                 return $this->resolveMagentoOrderValue($field);
                 break;
@@ -248,11 +248,10 @@ class Config
     }
 
 
-    public function resolveMagentoProductValue($field)
-    {
-        // todo: implement
-        return false;
-    }
+    // public function resolveMagentoProductValue($field)
+    // {
+    //     return false;
+    // }
 
     public function updateAddressFromConfig(&$attributes, $attribute)
     {
