@@ -27,7 +27,10 @@ abstract class AbstractSelect extends Select
     public function getSourceOptions()
     {
         return [
-            ['label' => 'Static', 'value' => 'static'],
+            [
+                'label' => 'Custom (use static as value)',
+                'value' => ['static' => 'Static']
+            ]
         ];
     }
 

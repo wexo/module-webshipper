@@ -11,9 +11,9 @@ use Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\MagentoFields;
 
 class AbstractFrontendModel extends AbstractFieldArray
 {
-    private $selectOptions;
-    private $webshipperFields = false;
-    private $magentoFields = false;
+    public $selectOptions;
+    public $webshipperFields = false;
+    public $magentoFields = false;
  
     public function __construct(
         Context $context,

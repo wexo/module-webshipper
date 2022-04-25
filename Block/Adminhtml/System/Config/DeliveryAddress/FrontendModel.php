@@ -2,41 +2,29 @@
 
 namespace Wexo\Webshipper\Block\Adminhtml\System\Config\DeliveryAddress;
 
+use \Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\WebshipperAddressFields;
+use \Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\MagentoFields;
+
 class FrontendModel extends \Wexo\Webshipper\Block\Adminhtml\System\Config\AbstractFrontendModel
 {
-    private $webshipperFields = false;
-    private $magentoFields = false;
-
-    protected function _prepareToRender()
+    public function getWebshipperFields()
     {
-
-        $this->addColumn(
-            'webshipper_field',
-            [
-                'label' => __('Webshipper Field'),
-                'class' => 'required-entry',
-                'renderer' => $this->getWebshipperFields(),
-            ]
-        );
-
-        $this->addColumn(
-            'magento_field',
-            [
-                'label' => __('Magento Field'),
-                'class' => 'required-entry',
-                'renderer' => $this->getMagentoFields(),
-            ]
-        );
-
-        $this->addColumn(
-            'static_field',
-            [
-                'label' => __('Static'),
-                'style' => 'width:300px',
-            ]
-        );
-
-        $this->_addAfter = false;
-        $this->_addButtonLabel = __('Add More');
+        if (!$this->webshipperFields) {
+            $this->webshipperFields = $this->getLayout()->createBlock(
+                WebshipperAddressFields::class,
+                ''
+            );
+        }
+        return $this->webshipperFields;
+    }
+    public function getMagentoFields()
+    {
+        if (!$this->magentoFields) {
+            $this->magentoFields = $this->getLayout()->createBlock(
+                MagentoFields::class,
+                ''
+            );
+        }
+        return $this->magentoFields;
     }
 }

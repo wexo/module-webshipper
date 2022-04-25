@@ -1,8 +1,9 @@
 <?php
-namespace Wexo\Webshipper\Block\Adminhtml\System\Config\OrderLine;
 
-use Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\MagentoOrderLineFields;
-use Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\WebshipperOrderLineFields;
+namespace Wexo\Webshipper\Block\Adminhtml\System\Config\BillingAddress;
+
+use \Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\WebshipperAddressFields;
+use \Wexo\Webshipper\Block\Adminhtml\System\Config\Dropdowns\MagentoFields;
 
 class FrontendModel extends \Wexo\Webshipper\Block\Adminhtml\System\Config\AbstractFrontendModel
 {
@@ -10,7 +11,7 @@ class FrontendModel extends \Wexo\Webshipper\Block\Adminhtml\System\Config\Abstr
     {
         if (!$this->webshipperFields) {
             $this->webshipperFields = $this->getLayout()->createBlock(
-                WebshipperOrderLineFields::class,
+                WebshipperAddressFields::class,
                 ''
             );
         }
@@ -20,7 +21,7 @@ class FrontendModel extends \Wexo\Webshipper\Block\Adminhtml\System\Config\Abstr
     {
         if (!$this->magentoFields) {
             $this->magentoFields = $this->getLayout()->createBlock(
-                MagentoOrderLineFields::class,
+                MagentoFields::class,
                 ''
             );
         }

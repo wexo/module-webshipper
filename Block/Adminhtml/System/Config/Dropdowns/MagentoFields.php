@@ -12,19 +12,20 @@ class MagentoFields extends \Wexo\Webshipper\Block\Adminhtml\System\Config\Abstr
                 'value' => [
                     'store_name' => 'Name',
                     'store_phone' => 'Phone',
-                    'store_country' => 'Country',
-                    'store_region' => 'Region',
-                    'store_zip' => 'Zip/Postal Code',
+                    'store_country_id' => 'Country',
+                    'store_region_id' => 'Region',
+                    'store_postcode' => 'Zip/Postal Code',
                     'store_city' => 'City',
-                    'store_street1' => 'Street1',
-                    'store_street2' => 'Street2',
-                    'store_vat' => 'Vat',
+                    'store_street_line1' => 'Street1',
+                    'store_street_line2' => 'Street2',
+                    'store_merchant_vat_number' => 'Vat',
                 ]
             ],[
                 'label' => 'Session Information',
                 'value' => [
                     'session_name' => 'Name',
                     'session_email' => 'Email',
+                    // 'session_get_data' => 'getData() from static',
                 ]
             ],[
                 'label' => 'Shipping Information',
@@ -33,14 +34,15 @@ class MagentoFields extends \Wexo\Webshipper\Block\Adminhtml\System\Config\Abstr
                     'shipping_firstname' => 'First Name',
                     'shipping_lastname' => 'Last Name',
                     'shipping_email' => 'Email',
-                    'shipping_phone' => 'Phone',
-                    'shipping_country' => 'Country',
+                    'shipping_telephone' => 'Phone',
+                    'shipping_country_id' => 'Country',
                     'shipping_region' => 'Region',
-                    'shipping_zip' => 'Zip/Postal Code',
+                    'shipping_postcode' => 'Zip/Postal Code',
                     'shipping_city' => 'City',
-                    'shipping_street1' => 'Street1',
-                    'shipping_street2' => 'Street2',
-                    'shipping_vat' => 'Vat'
+                    'shipping_street' => 'Street',
+                    'shipping_company' => 'Company',
+                    'shipping_fax' => 'Fax',
+                    // 'shipping_get_data' => 'getData() from static'
                 ]
             ],[
                 'label' => 'Billing Information',
@@ -49,14 +51,15 @@ class MagentoFields extends \Wexo\Webshipper\Block\Adminhtml\System\Config\Abstr
                     'billing_firstname' => 'First Name',
                     'billing_lastname' => 'Last Name',
                     'billing_email' => 'Email',
-                    'billing_phone' => 'Phone',
-                    'billing_country' => 'Country',
+                    'billing_telephone' => 'Phone',
+                    'billing_country_id' => 'Country',
                     'billing_region' => 'Region',
-                    'billing_zip' => 'Zip/Postal Code',
+                    'billing_postcode' => 'Zip/Postal Code',
                     'billing_city' => 'City',
-                    'billing_street1' => 'Street1',
-                    'billing_street2' => 'Street2',
-                    'billing_vat' => 'Vat'
+                    'billing_street' => 'Street',
+                    'billing_company' => 'Company',
+                    'billing_fax' => 'Fax',
+                    // 'billing_get_data' => 'getData() from static'
                 ]
             ]
         ];
