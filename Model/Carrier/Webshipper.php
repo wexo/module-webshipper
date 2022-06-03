@@ -360,8 +360,8 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
         $rate->setMethodType($methodType);
         $rate->setIsActive(true);
         $rate->setSortOrder(1);
-        $rate->setTitle($shippingRate['name'] ?? '');
-        $rate->setPrice($data['price'] ?? 0);
+        $rate->setTitle((string) $shippingRate['name']);
+        $rate->setPrice((float) $data['price']);
         $rate->setAllowFree(true);
         static::$logos[$this->makeMethodCode($rate)] = $data['carrier_logo'];
         return $rate;
