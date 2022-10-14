@@ -95,6 +95,8 @@ class Api
             $city = $shipping_address === null ? '' : $shipping_address['city'] ?? '';
             $company = $shipping_address === null ? '' : $shipping_address['company'] ?? '';
             $street = $shipping_address === null ? '' : $shipping_address['street'][0] ?? '';
+            $storeCountry = $this->config->getStoreCountry();
+            $countryCode = $shipping_address === null ? $storeCountry : $shipping_address['countryId'] ?? $storeCountry;
             $data = [
                 'data' => [
                     'type' => 'drop_point_locators',
