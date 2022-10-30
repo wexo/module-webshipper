@@ -285,6 +285,7 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
                 "delivery_address" => [
                     "zip" => $request->getDestPostcode(),
                     "city" => $request->getDestCity(),
+                    "address_1" => $request->getDestStreet(),
                     "street" => $request->getDestStreet(),
                     "country_code" => $request->getDestCountryId(),
                 ],
