@@ -60,10 +60,10 @@ class Config
     public function getConfigurationToken()
     {
         if ($this->configurationToken === null) {
-            $configurationToken = $this->scopeConfig->getValue(
+            $configurationToken = (string) $this->scopeConfig->getValue(
                 'carriers/webshipper/configuration_token',
                 ScopeInterface::SCOPE_STORE
-            );
+            ) ?? '';
             $this->configurationToken = $this->base64Json->unserialize($configurationToken);
         }
         return $this->configurationToken;
@@ -124,7 +124,7 @@ class Config
 
     public function getStoreCountry(): string
     {
-        return $this->scopeConfig->getValue(
+        return (string) $this->scopeConfig->getValue(
             'general/store_information/country_id',
             ScopeInterface::SCOPE_STORE
         ) ?? '';
@@ -132,7 +132,7 @@ class Config
 
     public function getStoreZip(): string
     {
-        return $this->scopeConfig->getValue(
+        return (string) $this->scopeConfig->getValue(
             'general/store_information/postcode',
             ScopeInterface::SCOPE_STORE
         ) ?? '';
@@ -145,6 +145,9 @@ class Config
                 'carriers/webshipper',
                 ScopeInterface::SCOPE_STORE
             );
+            if(!is_array($this->carrierConfig)) {
+                $this->carrierConfig = explode(',', $this->carrierConfig);
+            }
         }
         return $this->carrierConfig;
     }
@@ -173,7 +176,7 @@ class Config
             return $static;
         }
 
-        $fieldArray = explode('_', $mapping['magento_field']);
+        $fieldArray = explode('_', (string) $mapping['magento_field'] ?? '');
         $type = array_shift($fieldArray);
         $field = implode('_', $fieldArray);
 

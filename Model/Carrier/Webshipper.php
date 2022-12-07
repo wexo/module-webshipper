@@ -341,7 +341,9 @@ class Webshipper extends AbstractCarrier implements WebshipperInterface
     {
         $product = $item->getProduct();
         $attributes = $this->config->getProductAttributes() ?? "";
-        $attributes = explode(',', $attributes);
+        if(!is_array($attributes)){
+            $attributes = explode(',', (string) $attributes);
+        }
         $attributes = array_filter($attributes);
         $data = [];
         foreach ($attributes as $attributeCode) {

@@ -41,7 +41,7 @@ class ExportOrderAtStatus implements ObserverInterface
             }
 
             $orderStatusIsValid = in_array($order->getStatus(), $exportAtOrderStatus);
-            $validShippingMethod = strpos($order->getShippingMethod(), 'webshipper') !== false;
+            $validShippingMethod = strpos((string) $order->getShippingMethod(), 'webshipper') !== false;
             if ($orderStatusIsValid || !$validShippingMethod) {
                 $this->logger->debug(
                     'Webshipper Bulk Import Order Status Validation',
