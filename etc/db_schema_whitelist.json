@@ -1,0 +1,20 @@
+{
+    "sales_order": {
+        "column": {
+            "webshipper_id": true
+        }
+    },
+    "webshipper": {
+        "column": {
+            "id": true,
+            "order_id": true,
+            "webshipper_id": true,
+            "state": true,
+            "message": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

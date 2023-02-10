@@ -122,6 +122,62 @@ class Config
         );
     }
 
+    public function getStoreEmail(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'trans_email/ident_general/email',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
+    public function getStoreContact(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'trans_email/ident_general/name',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
+    public function getStorePhone(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'general/store_information/phone',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
+    public function getStoreName(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'general/store_information/name',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
+    public function getStoreStreet(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'general/store_information/street_line1',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+    
+    public function getStoreSecondaryStreet(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'general/store_information/street_line2',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
+    public function getStoreCity(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            'general/store_information/city',
+            ScopeInterface::SCOPE_STORE
+        ) ?? '';
+    }
+
     public function getStoreCountry(): string
     {
         return (string) $this->scopeConfig->getValue(
@@ -136,6 +192,11 @@ class Config
             'general/store_information/postcode',
             ScopeInterface::SCOPE_STORE
         ) ?? '';
+    }
+
+    public function getStorePostCode(): string
+    {
+        return $this->getStoreZip();
     }
 
     public function getCarrierConfig(): array

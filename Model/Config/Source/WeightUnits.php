@@ -25,6 +25,7 @@ class WeightUnits implements \Magento\Framework\Option\ArrayInterface
         $weightUnits = [
             'g' => 'Gram',
             'kg' => 'Kilogram',
+            'oz' => 'Ounce',
             'lbs' => 'Pounds',
         ];
         $options = [['value' => '', 'label' => __('-- Please Select --')]];

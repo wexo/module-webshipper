@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="sales_order" resource="sales" engine="innodb" comment="Sales Order">
+        <column xsi:type="int" name="webshipper_id" nullable="true" comment="Webshipper Id"/>
+    </table>
+    <table name="webshipper">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" comment="Id"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order Id"/>
+        <column xsi:type="int" name="webshipper_id" unsigned="true" nullable="false" comment="Webshipper Order Id"/>
+        <column xsi:type="varchar" name="state" nullable="false" length="255" comment="State"/>
+        <column xsi:type="varchar" name="message" nullable="false" length="255" comment="Message"/>
+        <column xsi:type="datetime" name="created_at" comment="Created at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
+</schema>
