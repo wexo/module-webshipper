@@ -3,10 +3,6 @@ namespace Wexo\Webshipper\Model\Config\Source\Order;
 
 class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInterface
 {
-    public $defaultOption = [
-        'value' => '',
-        'label' => __('-- Use Default --')
-    ];
     /**
      * @var \Magento\Catalog\Model\ResourceModel\Eav\Attribute
      */
@@ -36,7 +32,10 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
 
     public function getDefaultOption()
     {
-        return $this->defaultOption;
+        return [
+            'value' => '',
+            'label' => __('-- Use Default --')
+        ];
     }
 
     /**
