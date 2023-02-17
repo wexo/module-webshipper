@@ -119,5 +119,101 @@
                 -->
             </group>
         </section>
+        <section id="webshipper" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Webshipper</label>
+            <tab>sales</tab>
+            <resource>Wexo_Webshipper::config</resource>
+            <group id="settings" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="show_button_on_order" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show button on Order Page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Status</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
+                </field>
+            </group>
+            <group id="order" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="create_shipment_automatically" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Create Shipment Automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="external_comment" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Comment</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\ExternalComment</source_model>
+                </field>
+                <field id="internal_comment" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Internal Comment</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\InternalComment</source_model>
+                </field>
+                <field id="ext_ref" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\ExternalReference</source_model>
+                </field>
+                <field id="visible_ref" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Visible Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\VisibleReference</source_model>
+                </field>
+                <field id="order" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Order Attributes Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\Order\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\Order\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#order'>Webshipper Order Documentation</a>]]></comment>
+                </field>
+            </group>
+
+            <group id="order_line" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order Line Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="sku" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Identifier (sku)</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="ext_ref" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="dangerous_goods" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Dangerous Goods:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="manufacturer" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Manufacturer</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="tarif_number" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tarif:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="weight_attribute" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Weight Unit:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="weight_unit" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Weight Unit:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\WeightUnits</source_model>
+                </field>
+                <field id="additional_attributes" translate="label" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Product Data</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="order_line_additional_attributes" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Order Line Attributes Mapping</label>
+                    <backend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\OrderLine\BackendModel</backend_model>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\OrderLine\FrontendModel</frontend_model>
+                    <comment><![CDATA[<a href='https://docs.webshipper.io/#order_lines'>Webshipper Order Line Documentation</a>]]></comment>
+                </field>
+            </group>
+        </section>
     </system>
 </config>

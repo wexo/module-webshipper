@@ -387,4 +387,12 @@ class Config
             return [];
         }
     }
+
+    public function showButtonOnOrder()
+    {
+        return $this->scopeConfig->getValue(
+            'webshipper/settings/show_button_on_order',
+            ScopeInterface::SCOPE_STORE
+        ) === '1';
+    }
 }
