@@ -26,7 +26,7 @@ class ExportOrderButton
         $subject->addButton(
             'webshipper_order_export',
             [
-                'label' => __('Export order to Webshipper'),
+                'label' => __('Export to Webshipper'),
                 'class' => __('webshipper-order-export'),
                 'id' => 'webshipper-order-export',
                 'onclick' => 'setLocation(\'' .

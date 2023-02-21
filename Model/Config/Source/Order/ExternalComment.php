@@ -6,8 +6,8 @@ class ExternalComment extends AbstractOrderAttributes
     public function getDefaultOption()
     {
         return [
-            'value' => '',
-            'label' => __('-- Use Default (external_comment) --')
+            'value' => '0',
+            'label' => __('-- Use Default (customer_note) --')
         ];
     }
 }

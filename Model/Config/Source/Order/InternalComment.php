@@ -7,8 +7,8 @@ class InternalComment extends AbstractOrderAttributes
     public function getDefaultOption()
     {
         return [
-            'value' => '',
-            'label' => __('-- Use Default (internal_comment) --')
+            'value' => '0',
+            'label' => __('-- Use Default (none) --')
         ];
     }
 }

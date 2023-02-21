@@ -161,7 +161,7 @@ class Config
             ScopeInterface::SCOPE_STORE
         ) ?? '';
     }
-    
+
     public function getStoreSecondaryStreet(): string
     {
         return (string) $this->scopeConfig->getValue(
@@ -206,7 +206,7 @@ class Config
                 'carriers/webshipper',
                 ScopeInterface::SCOPE_STORE
             );
-            if(!is_array($this->carrierConfig)) {
+            if (!is_array($this->carrierConfig)) {
                 $this->carrierConfig = explode(',', $this->carrierConfig);
             }
         }
@@ -254,9 +254,9 @@ class Config
             case 'store':
                 return $this->resolveMagentoStoreValue($field);
                 break;
-            // case 'product':
-            //     return $this->resolveMagentoProductValue($field);
-            //     break;
+                // case 'product':
+                //     return $this->resolveMagentoProductValue($field);
+                //     break;
             case 'order':
                 return $this->resolveMagentoOrderValue($field);
                 break;
@@ -395,4 +395,159 @@ class Config
             ScopeInterface::SCOPE_STORE
         ) === '1';
     }
+
+    public function getCreateShipmentAutomatically()
+    {
+        return $this->scopeConfig->getValue(
+            'webshipper/settings/create_shipment_automatically',
+            ScopeInterface::SCOPE_STORE
+        ) === '1';
+    }
+
+    public function getValueFromOrder($order, $field)
+    {
+        $configValue = $this->scopeConfig->getValue(
+            'webshipper/order/' . $field,
+            ScopeInterface::SCOPE_STORE
+        );
+        if (!empty($configValue) && $configValue !== '0' && $configValue !== null) {
+            $orderValue = $order->getData($configValue);
+            if(!empty($orderValue) && $orderValue !== null) {
+                return $orderValue;
+            }
+        }
+        return false;
+    }
+
+    public function getExternalReferenceFromOrder($order)
+    {
+        $configValue = $this->getValueFromOrder($order, 'external_reference');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $order->getId();
+    }
+
+    public function getVisibleReferenceFromOrder($order)
+    {
+        $configValue = $this->getValueFromOrder($order, 'visible_reference');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $order->getIncrementId();
+    }
+
+    public function getExternalCommentFromOrder($order)
+    {
+        $configValue = $this->getValueFromOrder($order, 'external_comment');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $order->getCustomerNote() ?? false;
+    }
+
+    public function getInternalCommentFromOrder($order)
+    {
+        $configValue = $this->getValueFromOrder($order, 'internal_comment');
+        if ($configValue) {
+            return $configValue;
+        }
+        return false;
+    }
+
+    public function getValueFromOrderLine($item, $field)
+    {
+        $configValue = $this->scopeConfig->getValue(
+            'webshipper/order_line/' . $field,
+            ScopeInterface::SCOPE_STORE
+        );
+        if(is_string($configValue)){
+            $configValue = explode(',', $configValue);
+            $product = $item->getProduct();
+            $returnValue = [];
+            foreach($configValue as $value)
+            {
+                $returnValue[$value] = $product->getData($value);
+            }
+            if($field === 'additional_attributes'){
+                return $returnValue;
+            }else{
+                return array_values($returnValue)[0] ?? false;
+            }
+        }
+        return false;
+    }
+
+    public function getSkuForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'sku');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $item->getSku();
+    }
+
+    public function getDescriptionForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'description');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $item->getName();
+    }
+
+    public function getExternalReferenceForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'external_reference');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $item->getProductId();
+    }
+
+    public function getWeightForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'weight');
+        if ($configValue) {
+            return $configValue;
+        }
+        return $item->getWeight();
+    }
+
+    public function getTarifForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'tarif');
+        if ($configValue) {
+            return $configValue;
+        }
+        return false;
+    }
+
+    public function getManufacturerForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'manufacturer');
+        if ($configValue) {
+            return $configValue;
+        }
+        return false;
+    }
+
+    public function getLocationForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'location');
+        if ($configValue) {
+            return $configValue;
+        }
+        return false;
+    }
+
+    public function getAdditionalAttributesForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'additional_attributes');
+        if ($configValue) {
+            return $configValue;
+        }
+        return [];
+    }
+
 }

@@ -4,6 +4,8 @@
     <module name="Wexo_Webshipper" setup_version="1.0.2">
         <sequence>
             <module name="Wexo_Shipping"/>
+            <module name="Magento_Backend" />
+            <module name="Magento_Ui" />
         </sequence>
     </module>
 </config>

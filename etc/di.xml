@@ -27,4 +27,20 @@
             </argument>
         </arguments>
     </type>
+
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+    <arguments>
+        <argument name="collections" xsi:type="array">
+        <item name="wexo_webshipper_order_log_listing_data_source" xsi:type="string">WexoWebshipperOrderLogCollection</item>
+        </argument>
+    </arguments>
+    </type>
+
+    <virtualType name="WexoWebshipperOrderLogCollection" type="Wexo\Webshipper\Ui\DataProvider\OrderLog\Listing\Collection">
+    <arguments>
+        <argument name="mainTable" xsi:type="string">webshipper</argument>
+        <argument name="resourceModel" xsi:type="string">Wexo\Webshipper\Model\ResourceModel\OrderLog</argument>
+    </arguments>
+    </virtualType>
 </config>

@@ -1,0 +1,16 @@
+<?xml 
+version="1.0" 
+encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add 
+            id="Wexo_Webshipper::logs" 
+            title="Webshipper Order Logs" 
+            module="Wexo_Webshipper" 
+            sortOrder="1000"
+            parent="Magento_Sales::sales_operation" 
+            resource="Wexo_Webshipper::logs"
+            action="wexo_webshipper/order/log" 
+        />
+    </menu>
+</config>

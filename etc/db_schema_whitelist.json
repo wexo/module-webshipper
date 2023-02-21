@@ -11,10 +11,14 @@
             "webshipper_id": true,
             "state": true,
             "message": true,
-            "created_at": true
+            "created_at": true,
+            "increment_id": true,
+            "updated_at": true
         },
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "WEBSHIPPER_ORDER_ID_WEBSHIPPER_ID": true,
+            "WEBSHIPPER_ORDER_ID": true
         }
     }
 }

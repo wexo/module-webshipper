@@ -6,7 +6,7 @@ class VisibleReference extends AbstractOrderAttributes
     public function getDefaultOption()
     {
         return [
-            'value' => '',
+            'value' => '0',
             'label' => __('-- Use Default (increment_id) --')
         ];
     }

@@ -19,15 +19,22 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
      * @var SortOrder
      */
     private $sortOrder;
+    /** 
+     * @var \Magento\Framework\App\ResourceConnection
+     */
+    public $resourceConnection;
+    
 
     public function __construct(
         \Magento\Framework\Api\SortOrder $sortOrder,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
-        \Magento\Eav\Api\AttributeRepositoryInterface $attributeRepository
+        \Magento\Eav\Api\AttributeRepositoryInterface $attributeRepository,
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
     ) {
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->attributeRepository = $attributeRepository;
         $this->sortOrder = $sortOrder;
+        $this->resourceConnection = $resourceConnection;
     }
 
     public function getDefaultOption()
@@ -60,10 +67,30 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
                 'label' => $items->getFrontendLabel()
             ];
         }
-        uksort($options, function ($a, $b) {
-            $a = mb_strtolower($a);
-            $b = mb_strtolower($b);
-            return strcmp($a, $b);
+
+        // $reflectionClass = new \ReflectionClass(\Magento\Sales\Model\Order::class);
+        // $constants = $reflectionClass->getConstants();
+        // foreach($constants as $constant){
+        //     $human = str_replace('_', ' ', $constant);
+        //     $human = ucwords($human);
+        //     $options[] = [
+        //         'value' => $constant,
+        //         'label' => $human
+        //     ];
+        // }
+
+        
+        $salesOrder = $this->resourceConnection->getConnection()->describeTable('sales_order');
+        foreach(array_keys($salesOrder) as $attribute){
+            $human = str_replace('_', ' ', $attribute);
+            $human = ucwords($human);
+            $options[] = [
+                'value' => $attribute,
+                'label' => $human
+            ];
+        }
+        usort($options, function ($a, $b) {
+            return strcmp($a['label'] ?? '', $b['label'] ?? '');
         });
         return $options;
     }   

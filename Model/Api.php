@@ -80,6 +80,10 @@ class Api
      * @var \Magento\Framework\App\ResourceConnection
      */
     private $resourceConnection;
+    /**
+     * @var \Magento\Sales\Model\Order\AddressFactory
+     */
+    private $addressFactory;
 
     /**
      * Api constructor.
@@ -102,7 +106,8 @@ class Api
         \Magento\Framework\Serialize\Serializer\Json $json,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Store\Model\App\Emulation $emulation,
-        \Magento\Framework\App\ResourceConnection $resourceConnection
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        \Magento\Sales\Model\Order\AddressFactory $addressFactory
     ) {
         $this->clientFactory = $clientFactory;
         $this->url = $url;
@@ -115,6 +120,7 @@ class Api
         $this->emulation = $emulation;
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
+        $this->addressFactory = $addressFactory;
     }
 
     /**
@@ -281,61 +287,126 @@ class Api
     public function exportOrder(\Magento\Sales\Model\Order $order)
     {
         $this->emulation->startEnvironmentEmulation($order->getStoreId(), \Magento\Framework\App\Area::AREA_FRONTEND, true);
+        try {
+            return $this->request(function (Client $client) use ($order) {
+                $data = $this->mapOrderTransferObject($order);
 
-        $this->request(function (Client $client) use ($order) {
-            $data = $this->mapOrderTransferObject($order);
-
-            $this->logger->debug(
-                '\Wexo\Webshipper\Model\Api::exportOrder :: Preflight',
-                [
-                    'body' => $data
-                ]
-            );
-            return $client->post(
-                "/v2/orders",
-                [
-                    'json' => $data,
-                    'headers' => [
-                        'Accept' => 'application/vnd.api+json',
-                        'Content-Type' => 'application/vnd.api+json'
+                $this->logger->debug(
+                    '\Wexo\Webshipper\Model\Api::exportOrder :: Preflight',
+                    [
+                        'body' => $data
                     ]
-                ]
-            );
-        }, function (Response $response, $content) use ($order) {
-
-            if($response->getStatusCode() === 201){
-
+                );
+                return $client->post(
+                    "/v2/orders",
+                    [
+                        'json' => $data,
+                        'headers' => [
+                            'Accept' => 'application/vnd.api+json',
+                            'Content-Type' => 'application/vnd.api+json'
+                        ]
+                    ]
+                );
+            }, function (Response $response, $content) use ($order) {
+                $this->logger->debug(
+                    '\Wexo\Webshipper\Model\Api::exportOrder :: Response',
+                    [
+                        'reason' => $response->getReasonPhrase(),
+                        'status' => $response->getStatusCode(),
+                        'body' => $content
+                    ]
+                );
                 $webshipperId = $content['data']['id'] ?? 0;
-                // Update webshipper_log table with response and order status
-                // $connection = $this->resourceConnection->getConnection();
-                // $tableName = $this->resourceConnection->getTableName('webshipper_log');
 
-                // $query = "
-                //     INSERT INTO $tableName (order_id, webshipper_id, state, message, created_at) 
-                //     VALUES (:order_id, :response, :status) 
-                //     ON DUPLICATE KEY UPDATE response = :response, status = :status
-                //     ";
-                // $binds = [
-                //     'order_id' => $order->getId(),
-                //     'webshipper_id' => $webshipperId,
-                //     'response' => $response->getBody()->__toString(),
-                //     'state' => self::WEBSHIPPER_ORDER_STATE_EXPORTED,
-                //     'created_at' => new \Magento\Framework\DB\Sql\Expression('NOW()')
-                // ];
-                // $connection->query($query, $binds);
+                if ($response->getStatusCode() === 201) {
+                    $message = 'Success';
+                    $state = self::WEBSHIPPER_ORDER_STATE_EXPORTED;
+                } else {
+                    $message = $content;
+                    $state = self::WEBSHIPPER_ORDER_STATE_FAILED;
+                }
 
+                $this->updateWebshipperLog(
+                    $order->getId(),
+                    $order->getIncrementId(),
+                    $webshipperId,
+                    $state,
+                    $message
+                );
+
+                return 'Webshipper Id:' . $webshipperId;
+            });
+        } catch (ClientException $e) {
+            if ($e->getCode() === 422) {
+                $message = 'Already Exported to Webshipper';
+                $state = self::WEBSHIPPER_ORDER_STATE_EXPORTED;
+                $adminMessage = 'Already exported to Webshipper';
+            } else {
+                $message = $e->getMessage();
+                $state = self::WEBSHIPPER_ORDER_STATE_FAILED;
+                $adminMessage = 'error';
             }
-            $this->logger->debug(
-                '\Wexo\Webshipper\Model\Api::exportOrder :: Response',
+
+            $this->updateWebshipperLog(
+                $order->getId(),
+                $order->getIncrementId(),
+                0,
+                $state,
+                $message
+            );
+
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::exportOrder :: ERROR',
                 [
-                    'reason' => $response->getReasonPhrase(),
-                    'status' => $response->getStatusCode(),
-                    'body' => $content
+                    'reason' => $e->getResponse()->getReasonPhrase(),
+                    'message' => $e->getResponse()->getBody()->__toString(),
+                    'status' => $e->getResponse()->getStatusCode(),
+                    'body' => $e->getResponse()->getBody()->__toString()
                 ]
             );
-        });
 
+            return $adminMessage;
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::exportOrder :: ERROR',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+            return 'error';
+        }
         $this->emulation->stopEnvironmentEmulation();
+    }
+
+    public function updateWebshipperLog($order_id, $increment_id, $webshipper_id, $state, $message)
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $tableName = $this->resourceConnection->getTableName('webshipper');
+
+        $query = "
+            INSERT INTO $tableName (order_id, increment_id, webshipper_id, state, message, created_at) 
+            VALUES (:order_id, :increment_id, :webshipper_id, :message, :state, NOW()) 
+            ON DUPLICATE KEY UPDATE message = CONCAT(:message, ' | ', message), state = :state, updated_at = NOW()
+        ";
+        $binds = [
+            'order_id' => $order_id,
+            'increment_id' => $increment_id,
+            'webshipper_id' => $webshipper_id,
+            'state' => $state,
+            'message' => $message
+        ];
+        try {
+            $connection->query($query, $binds);
+        } catch (\Exception $e) {
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::updateWebshipperLog :: ERROR',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+        }
     }
 
     public function mapOrderTransferObject(\Magento\Sales\Model\Order $order)
@@ -349,38 +420,49 @@ class Api
 
         $shippingAddress = $order->getShippingAddress();
         $billingAddress = $order->getBillingAddress();
-        
-        $deliveryAddress = $this->mapDeliveryAddress($shippingAddress);
 
         $shippingMethod = $order->getShippingMethod();
         $shippingRateId = $this->getShippingRateIdFromMethod($shippingMethod);
         $hasDropPoint = $this->isShippingRateDropPoint($shippingMethod);
+        $dropPoint = [];
+        $deliveryAddress = $this->mapDeliveryAddress($shippingAddress);
         if ($hasDropPoint) {
             $dropPoint = $this->extractDroppoint($order);
+
+            // change delivery address to customer address to ensure trail is correct
+            // Shipping address in magento is the parcelshop by default
+            $shippingData = $this->jsonSerializer->unserialize($order->getData('wexo_shipping_data'));
+            $customerShippingAddressData = $shippingData['shipping_address'] ?? [];
+            if (!empty($customerShippingAddressData)) {
+                $customerShippingAddress = $this->addressFactory->create();
+                $customerShippingAddress->addData($customerShippingAddressData);
+                $deliveryAddress = $this->mapDeliveryAddress($customerShippingAddress);
+            }
         }
-        
+
         $senderAddress = $this->mapSenderAddress();
         $billingAddress = $this->mapBillingAddress($billingAddress);
 
-
-        // TODO: External Ref setting
-        // TODO: visible ref setting
-        // TODO: setting create_shipment_automatically
+        $createShipmentAutomatically = $this->config->getCreateShipmentAutomatically();
+        $externalReference = $this->config->getExternalReferenceFromOrder($order);
+        $visibleReference = $this->config->getVisibleReferenceFromOrder($order);
+        $externalComment = $this->config->getExternalCommentFromOrder($order);
+        $internalComment = $this->config->getInternalCommentFromOrder($order);
 
         $dto = [
             "data" => [
                 "type" => "orders",
                 "attributes" => [
                     "status" => "pending", // pending, dispatched, partly_dispatched, cancelled, error, missing_rate, on_hold
-                    "ext_ref" => $order->getId(),
-                    "visible_ref" => $order->getIncrementId(),
+                    "ext_ref" => $externalReference,
+                    "visible_ref" => $visibleReference,
                     "delivery_address" => $deliveryAddress,
                     "sender_address" => $senderAddress,
                     "billing_address" => $billingAddress,
                     "currency" => $order->getOrderCurrencyCode(),
                     "order_lines" => $orderLines,
-                    // TODO: setting for 'external_comment' =>
-                    // TODO: setting for internal_comment
+                    'external_comment' => $externalComment,
+                    'internal_comment' => $internalComment
                 ],
                 "relationships" => [
                     "order_channel" => [
@@ -398,13 +480,33 @@ class Api
                 ]
             ]
         ];
+        if ($createShipmentAutomatically) {
+            $dto['data']['attributes']['create_shipment_automatically'] = true;
+        }
         if ($hasDropPoint && !empty($dropPoint)) {
             $dto['data']['attributes']['drop_point'] = $dropPoint;
         }
 
+        $dto = $this->array_remove_empty($dto);
+
         // Reset Current Store
         $this->storeManager->setCurrentStore($oldStore->getId());
         return $dto;
+    }
+
+    public function array_remove_empty($haystack)
+    {
+        foreach ($haystack as $key => $value) {
+            if (is_array($value)) {
+                $haystack[$key] = $this->array_remove_empty($haystack[$key]);
+            }
+
+            if (empty($haystack[$key])) {
+                unset($haystack[$key]);
+            }
+        }
+
+        return $haystack;
     }
 
     public function mapDeliveryAddress(\Magento\Sales\Model\Order\Address $shippingAddress)
@@ -464,31 +566,35 @@ class Api
 
     public function mapOrderLines(\Magento\Sales\Model\Order $order)
     {
-        // TODO: notes about settings for order lines:
-        // minium weight
-        // ext_ref source (product_id, sku, custom)
-        // TODO: Dangerous_goods
+        $orderLines = [];
 
         /** @var \Magento\Sales\Api\Data\OrderItemInterface $item */
         foreach ($order->getItems() as $item) {
-            $orderLines[] = [
-                "sku" => $item['sku'] ?? '',
-                "description" => $item['name'] ?? '',
+            $sku = $this->config->getSkuForOrderLine($item);
+            $description = $this->config->getDescriptionForOrderLine($item);
+            $externalReference = $this->config->getExternalReferenceForOrderLine($item);
+            $weight = $this->config->getWeightForOrderLine($item);
+            $tarif = $this->config->getTarifForOrderLine($item);
+            $manufacturer = $this->config->getManufacturerForOrderLine($item);
+            $location = $this->config->getLocationForOrderLine($item);
+            $additionalAttributes = $this->config->getAdditionalAttributesForOrderLine($item);
+            $orderLine = [
+                "sku" => $sku,
+                "description" => $description,
                 "quantity" => $item->getQtyOrdered(),
-                // TODO: Setting for location: "location" => null,
-                // TODO: Setting for tarif: "tarif_number" => $this->getAttributeFromAdditionalData($item, 'maul_tarif') ?? null,
-                // TODO: Setting for manufacturer: "country_of_origin" => ,
+                "location" => $location,
+                "tarif_number" => $tarif,
+                "country_of_origin" => $manufacturer,
                 "unit_price" => $item->getPriceInclTax(),
                 "vat_percent" => $item->getTaxPercent(),
                 "status" => 'pending', // pending, dispatched or returned
-                "ext_ref" => $item->getProductId(),
-                "weight" => $item->getWeight(),
+                "ext_ref" => $externalReference,
+                "weight" => $weight,
                 "weight_unit" => $this->config->getWeightUnit(),
                 "is_virtual" => $item->getIsVirtual(),
-                "additional_attributes" => [
-                    // TODO: Additional Attributes
-                ]
+                "additional_attributes" => $additionalAttributes
             ];
+            $orderLines[] = $this->array_remove_empty($orderLine);
         }
         return $orderLines;
     }
@@ -527,7 +633,5 @@ class Api
             }
         }
         return '';
-
-        // order_import
     }
 }
