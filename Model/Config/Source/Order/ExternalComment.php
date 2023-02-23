@@ -7,7 +7,7 @@ class ExternalComment extends AbstractOrderAttributes
     {
         return [
             'value' => '0',
-            'label' => __('-- Use Default (customer_note) --')
+            'label' => __('-- Use Default (none) --')
         ];
     }
 }

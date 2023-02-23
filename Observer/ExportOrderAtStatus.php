@@ -35,53 +35,28 @@ class ExportOrderAtStatus implements ObserverInterface
     {
         try {
             $order = $observer->getEvent()->getOrder();
+
+            if($order->getWebshipperId() !== null){
+                return false;
+            }
+
             $exportAtOrderStatus = $this->config->getExportOrderAtStatus() ?? [];
             if (empty($exportAtOrderStatus) && is_array($exportAtOrderStatus)) {
                 return false;
             }
 
-            $orderStatusIsValid = in_array($order->getStatus(), $exportAtOrderStatus);
-            $validShippingMethod = strpos((string) $order->getShippingMethod(), 'webshipper') !== false;
-            if ($orderStatusIsValid || !$validShippingMethod) {
-                $this->logger->debug(
-                    'Webshipper Bulk Import Order Status Validation',
-                    [
-                        'order_status' => $order->getStatus(),
-                        'export_at_order_status' => $exportAtOrderStatus,
-                        'order_status_valid' => $orderStatusIsValid,
-                        'valid_shipping_method' => $validShippingMethod
-                    ]
-                );
+            $oldStatus = $order->getOrigData('status');
+            $newStatus = $order->getStatus();
+            if ($oldStatus == $newStatus) {
                 return false;
             }
-            $this->api->request(function ($client) use ($order) {
-                $data = [
-                    'data' => [
-                        'type' => 'bulk_import_orders',
-                        'attributes' => [
-                            'ids' => [$order->getIncrementId()],
-                            'order_channel_id' => $this->config->getOrderChannelId()
-                        ]
-                    ]
-                ];
-                $this->logger->debug('Webshipper Bulk Import Order Request', [
-                    'data' => $data
-                ]);
-                return $client->post('/v2/bulk_import_orders', [
-                    'json' => $data,
-                    'headers' => [
-                        'Accept' => 'application/vnd.api+json',
-                        'Content-Type' => 'application/vnd.api+json'
-                    ]
-                ]);
-            }, function ($response, $content) {
-                $this->logger->debug(
-                    'Webshipper Bulk Import Response: ',
-                    [
-                        'content' => $content
-                    ]
-                );
-            });
+
+            $orderStatusIsValid = in_array($order->getStatus(), $exportAtOrderStatus);
+            $validShippingMethod = strpos((string) $order->getShippingMethod(), 'webshipper') !== false;
+
+            if($this->config->isExportEnabled() && $validShippingMethod && $orderStatusIsValid){
+                $this->api->exportOrder($order);
+            }
         } catch (\Throwable $t) {
             $this->logger->debug(
                 'Webhipper Bulk Import Error',

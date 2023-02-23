@@ -86,6 +86,11 @@ class Api
     private $addressFactory;
 
     /**
+     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     */
+    private $orderRepository;
+
+    /**
      * Api constructor.
      * @param ClientFactory $clientFactory
      * @param UrlInterface $url
@@ -107,7 +112,8 @@ class Api
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Store\Model\App\Emulation $emulation,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
-        \Magento\Sales\Model\Order\AddressFactory $addressFactory
+        \Magento\Sales\Model\Order\AddressFactory $addressFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
     ) {
         $this->clientFactory = $clientFactory;
         $this->url = $url;
@@ -121,6 +127,7 @@ class Api
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
         $this->addressFactory = $addressFactory;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -185,7 +192,11 @@ class Api
 
     public function isShippingRateDropPoint($method)
     {
-        return (int)explode('_', $method ?? '')[2] === 1;
+        $explode = explode('_', $method ?? '');
+        if(count($explode) > 2){
+            return (int)explode('_', $method ?? '')[2] === 1;
+        }
+        return false;
     }
 
     /**
@@ -286,9 +297,12 @@ class Api
 
     public function exportOrder(\Magento\Sales\Model\Order $order)
     {
+        if(!$this->config->isExportEnabled()){
+            return false;
+        }
         $this->emulation->startEnvironmentEmulation($order->getStoreId(), \Magento\Framework\App\Area::AREA_FRONTEND, true);
         try {
-            return $this->request(function (Client $client) use ($order) {
+            $response = $this->request(function (Client $client) use ($order) {
                 $data = $this->mapOrderTransferObject($order);
 
                 $this->logger->debug(
@@ -321,9 +335,13 @@ class Api
                 if ($response->getStatusCode() === 201) {
                     $message = 'Success';
                     $state = self::WEBSHIPPER_ORDER_STATE_EXPORTED;
+                    $order->addCommentToStatusHistory('Order exported to Webshipper: ' . $webshipperId);
+                    $order->setData('webshipper_id', $webshipperId);
+                    
                 } else {
                     $message = $content;
                     $state = self::WEBSHIPPER_ORDER_STATE_FAILED;
+                    $order->addCommentToStatusHistory('Order not exported to Webshipper, Check Webshipper Logs');
                 }
 
                 $this->updateWebshipperLog(
@@ -334,18 +352,23 @@ class Api
                     $message
                 );
 
-                return 'Webshipper Id:' . $webshipperId;
+                $this->orderRepository->save($order);
+
+                return $content;
             });
         } catch (ClientException $e) {
             if ($e->getCode() === 422) {
                 $message = 'Already Exported to Webshipper';
                 $state = self::WEBSHIPPER_ORDER_STATE_EXPORTED;
-                $adminMessage = 'Already exported to Webshipper';
+                $adminMessage = 'already_shipped';
+                $order->addCommentToStatusHistory('Order already exists in webshipper');
             } else {
                 $message = $e->getMessage();
                 $state = self::WEBSHIPPER_ORDER_STATE_FAILED;
                 $adminMessage = 'error';
+                $order->addCommentToStatusHistory('Order not exported to Webshipper: ' . $e->getMessage());
             }
+            $this->orderRepository->save($order);
 
             $this->updateWebshipperLog(
                 $order->getId(),
@@ -367,6 +390,8 @@ class Api
 
             return $adminMessage;
         } catch (\Throwable $e) {
+            $order->addCommentToStatusHistory('Order not exported to Webshipper: ' . $e->getMessage());
+            $this->orderRepository->save($order);
             $this->logger->error(
                 '\Wexo\Webshipper\Model\Api::exportOrder :: ERROR',
                 [
@@ -377,6 +402,7 @@ class Api
             return 'error';
         }
         $this->emulation->stopEnvironmentEmulation();
+        return $response;
     }
 
     public function updateWebshipperLog($order_id, $increment_id, $webshipper_id, $state, $message)
@@ -387,7 +413,7 @@ class Api
         $query = "
             INSERT INTO $tableName (order_id, increment_id, webshipper_id, state, message, created_at) 
             VALUES (:order_id, :increment_id, :webshipper_id, :message, :state, NOW()) 
-            ON DUPLICATE KEY UPDATE message = CONCAT(:message, ' | ', message), state = :state, updated_at = NOW()
+            ON DUPLICATE KEY UPDATE state = :state, updated_at = NOW(), message = CONCAT(:message, ' | ', message)
         ";
         $binds = [
             'order_id' => $order_id,

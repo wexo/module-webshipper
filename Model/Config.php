@@ -92,9 +92,12 @@ class Config
     public function getExportOrderAtStatus()
     {
         $value = $this->scopeConfig->getValue(
-            'carriers/webshipper/export_order_at_status',
+            'webshipper/settings/export_order_status',
             ScopeInterface::SCOPE_STORE
         );
+        if(is_string($value)) {
+            $value = explode(',', $value);
+        }
         return $value ?? false;
     }
 
@@ -421,7 +424,7 @@ class Config
 
     public function getExternalReferenceFromOrder($order)
     {
-        $configValue = $this->getValueFromOrder($order, 'external_reference');
+        $configValue = $this->getValueFromOrder($order, 'ext_ref');
         if ($configValue) {
             return $configValue;
         }
@@ -430,7 +433,7 @@ class Config
 
     public function getVisibleReferenceFromOrder($order)
     {
-        $configValue = $this->getValueFromOrder($order, 'visible_reference');
+        $configValue = $this->getValueFromOrder($order, 'visible_ref');
         if ($configValue) {
             return $configValue;
         }
@@ -443,7 +446,7 @@ class Config
         if ($configValue) {
             return $configValue;
         }
-        return $order->getCustomerNote() ?? false;
+        return false;
     }
 
     public function getInternalCommentFromOrder($order)
@@ -550,4 +553,11 @@ class Config
         return [];
     }
 
+    public function isExportEnabled()
+    {
+        return $this->scopeConfig->getValue(
+            'webshipper/settings/enabled',
+            ScopeInterface::SCOPE_STORE
+        ) === '1';
+    }
 }
