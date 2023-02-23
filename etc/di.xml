@@ -32,7 +32,7 @@
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
     <arguments>
         <argument name="collections" xsi:type="array">
-        <item name="wexo_webshipper_order_log_listing_data_source" xsi:type="string">WexoWebshipperOrderLogCollection</item>
+            <item name="wexo_webshipper_order_log_listing_data_source" xsi:type="string">WexoWebshipperOrderLogCollection</item>
         </argument>
     </arguments>
     </type>

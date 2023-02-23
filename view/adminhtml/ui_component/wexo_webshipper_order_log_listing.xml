@@ -2,7 +2,7 @@
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
   <argument name="data" xsi:type="array">
     <item name="js_config" xsi:type="array">
-      <item name="provider" xsi:type="string">get_parent_class(): Argument #1 ($object_or_class) must be an object or a valid class name, string given.wexo_webshipper_order_log_listing_data_source</item>
+      <item name="provider" xsi:type="string"></item>
       <item name="deps" xsi:type="string">wexo_webshipper_order_log_listing.wexo_webshipper_order_log_listing_data_source</item>
     </item>
     <item name="spinner" xsi:type="string">wexo_webshipper_order_log_columns</item>
@@ -11,13 +11,13 @@
     <argument name="dataProvider" xsi:type="configurableObject">
       <argument name="class" xsi:type="string">Wexo\Webshipper\Ui\DataProvider\OrderLog\LogDataProvider</argument>
       <argument name="name" xsi:type="string">wexo_webshipper_order_log_listing_data_source</argument>
-      <argument name="primaryFieldName" xsi:type="string">id</argument>
-      <argument name="requestFieldName" xsi:type="string">id</argument>
+      <argument name="primaryFieldName" xsi:type="string">order_id</argument>
+      <argument name="requestFieldName" xsi:type="string">order_id</argument>
       <argument name="data" xsi:type="array">
         <item name="config" xsi:type="array">
           <item name="update_url" xsi:type="url" path="mui/index/render" />
           <item name="storageConfig" xsi:type="array">
-            <item name="indexField" xsi:type="string">id</item>
+            <item name="indexField" xsi:type="string">order_id</item>
           </item>
         </item>
       </argument>
@@ -95,6 +95,13 @@
         <filter>dateRange</filter>
         <dataType>date</dataType>
         <label translate="true">Created</label>
+      </settings>
+    </column>
+    <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date"  sortOrder="70">
+      <settings>
+        <filter>dateRange</filter>
+        <dataType>date</dataType>
+        <label translate="true">Updated At</label>
       </settings>
     </column>
   </columns>

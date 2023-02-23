@@ -17,13 +17,27 @@ class Export extends Action
      */
     private $webshipperApi;
 
+    /**
+     * @var \Magento\Framework\Controller\ResultFactory
+     */
+    protected $resultFactory;
+
+    /**
+     * @var \Magento\Framework\View\LayoutFactory
+     */
+    private $layoutFactory;
+
     public function __construct(
         Context $context,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Wexo\Webshipper\Model\Api $webshipperApi,
+        \Magento\Framework\Controller\ResultFactory $resultFactory,
+        \Magento\Framework\View\LayoutFactory $layoutFactory
     ) {
         $this->orderRepository = $orderRepository;
         $this->webshipperApi = $webshipperApi;
+        $this->resultFactory = $resultFactory;
+        $this->layoutFactory = $layoutFactory;
         parent::__construct($context);
     }
     /**
@@ -35,13 +49,13 @@ class Export extends Action
         $order = $this->orderRepository->get($orderId);
         $status = $this->webshipperApi->exportOrder($order);
         if ($status == 'error') {
-            $order->addCommentToStatusHistory('Order not exported to Webshipper, Check Webshipper Logs');
             $this->messageManager->addErrorMessage(__('Order not exported to Webshipper, Check Webshipper Logs'));
+        } else if($status == 'already_shipped'){
+            $this->messageManager->addErrorMessage(__('Order already exists in Webshipper'));
         } else {
-            $order->addCommentToStatusHistory('Order exported to Webshipper: ' . $status);
-            $this->messageManager->addSuccessMessage(__('Order exported to Webshipper - (note: %1)', $status));
+            $this->messageManager->addSuccessMessage(__('Order exported to Webshipper sucessfully'));
+            
         }
-        $this->orderRepository->save($order);
         $this->_redirect('sales/order/view', ['order_id' => $orderId]);
     }
 

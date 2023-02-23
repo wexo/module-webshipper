@@ -43,16 +43,6 @@
                     <label>Show Carrier Logo</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="export_order_at_status"
-                       translate="label"
-                       type="multiselect"
-                       sortOrder="10"
-                       showInDefault="1"
-                       showInWebsite="1"
-                       showInStore="1">
-                    <label>Export Order to Webshipper when order status is:</label>
-                    <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
-                </field>
                 <field id="product_weight_unit"
                        translate="label"
                        type="select"
@@ -141,8 +131,14 @@
                     <label>Show button on Order Edit Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Order Status</label>
+                <field  id="export_order_status"
+                        translate="label"
+                        type="multiselect"
+                        sortOrder="10"
+                        showInDefault="1"
+                        showInWebsite="1"
+                        showInStore="1">
+                    <label>Export Order to Webshipper when order status is:</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
                 </field>
             </group>
@@ -165,10 +161,12 @@
                 <field id="ext_ref" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>External Reference</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\Order\ExternalReference</source_model>
+                    <comment>This will not affect previous orders. OBS: editing this field has consequences if you expect webshipper to handle capture/shipments as this is the order_id reference field</comment>
                 </field>
                 <field id="visible_ref" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Visible Reference</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\Order\VisibleReference</source_model>
+                    <comment>This field is what you see in webshipper backend</comment>
                 </field>
             </group>
 

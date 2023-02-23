@@ -4,7 +4,6 @@
         <column xsi:type="int" name="webshipper_id" nullable="true" comment="Webshipper Id"/>
     </table>
     <table name="webshipper">
-        <column xsi:type="int" name="id" unsigned="true" nullable="false" comment="Id"/>
         <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order Id"/>
         <column xsi:type="varchar" name="increment_id" nullable="false" length="255" comment="Order Increment Id"/>
         <column xsi:type="int" name="webshipper_id" unsigned="true" nullable="false" comment="Webshipper Order Id"/>
@@ -13,7 +12,7 @@
         <column xsi:type="datetime" name="created_at" comment="Created at"/>
         <column xsi:type="datetime" name="updated_at" comment="Updated at"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id"/>
+            <column name="order_id"/>
         </constraint>
         <constraint xsi:type="unique" referenceId="WEBSHIPPER_ORDER_ID">
             <column name="order_id"/>

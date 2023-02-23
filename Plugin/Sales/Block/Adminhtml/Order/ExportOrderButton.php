@@ -22,7 +22,12 @@ class ExportOrderButton
         if (!$this->config->showButtonOnOrder()) {
             return;
         }
-
+        $order = $subject->getOrder();
+        $shippingMethod = $order->getShippingMethod();
+        if(strpos($shippingMethod, 'webshipper') === false) {
+            return;
+        }
+        
         $subject->addButton(
             'webshipper_order_export',
             [
