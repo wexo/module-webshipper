@@ -56,7 +56,7 @@ class WebshipperExportStatus extends Column
                     $item[$this->getData('name')] = 'n/a';
                     continue;
                 }
-                $status = $lookup[$item["entity_id"]] ?? 'pending';
+                $status = $lookup[$item['entity_id']] ?? 'pending';
                 $item[$this->getData('name')] = $status;
             }
         }
