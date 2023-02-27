@@ -90,7 +90,7 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
             ];
         }
         usort($options, function ($a, $b) {
-            return strcmp($a['label'] ?? '', $b['label'] ?? '');
+            return strcmp((string)$a['label'], (string)$b['label']);
         });
         return $options;
     }   
