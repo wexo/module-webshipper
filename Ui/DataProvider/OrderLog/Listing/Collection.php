@@ -13,8 +13,6 @@ class Collection extends SearchResult
     protected function _initSelect()
     {
         $this->addFilterToMap('id', 'main_table.id');
-        // $this->addFilterToMap('name', 'devgridname.value');
-
         parent::_initSelect();
     }
 }

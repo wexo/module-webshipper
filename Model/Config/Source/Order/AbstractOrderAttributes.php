@@ -1,39 +1,17 @@
 <?php
+
 namespace Wexo\Webshipper\Model\Config\Source\Order;
 
 class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInterface
 {
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\Eav\Attribute
-     */
-    private $attributeFactory;
-    /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-    /**
-     * @var \Magento\Eav\Api\AttributeRepositoryInterface
-     */
-    private $attributeRepository;
-    /**
-     * @var SortOrder
-     */
-    private $sortOrder;
     /** 
      * @var \Magento\Framework\App\ResourceConnection
      */
     public $resourceConnection;
-    
 
     public function __construct(
-        \Magento\Framework\Api\SortOrder $sortOrder,
-        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
-        \Magento\Eav\Api\AttributeRepositoryInterface $attributeRepository,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
     ) {
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->attributeRepository = $attributeRepository;
-        $this->sortOrder = $sortOrder;
         $this->resourceConnection = $resourceConnection;
     }
 
@@ -50,24 +28,11 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
      */
     public function toOptionArray()
     {
-        $this->sortOrder->setField('frontend_label');
-        $this->sortOrder->setDirection('ASC');
-        $this->searchCriteriaBuilder->addSortOrder($this->sortOrder);
-        $searchCriteria = $this->searchCriteriaBuilder->create();
-        $attributeRepository = $this->attributeRepository->getList(
-            'order',
-            $searchCriteria
-        );
         $options = [
             $this->getDefaultOption()
         ];
-        foreach ($attributeRepository->getItems() as $items) {
-            $options[] = [
-                'value' => $items->getAttributeCode(),
-                'label' => $items->getFrontendLabel()
-            ];
-        }
 
+        // Alternative to get all attributes, though might want to use DI to inject the class to get overrides
         // $reflectionClass = new \ReflectionClass(\Magento\Sales\Model\Order::class);
         // $constants = $reflectionClass->getConstants();
         // foreach($constants as $constant){
@@ -79,9 +44,8 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
         //     ];
         // }
 
-        
         $salesOrder = $this->resourceConnection->getConnection()->describeTable('sales_order');
-        foreach(array_keys($salesOrder) as $attribute){
+        foreach (array_keys($salesOrder) as $attribute) {
             $human = str_replace('_', ' ', $attribute);
             $human = ucwords($human);
             $options[] = [
@@ -93,5 +57,5 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
             return strcmp((string)$a['label'], (string)$b['label']);
         });
         return $options;
-    }   
+    }
 }
