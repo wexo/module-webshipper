@@ -193,7 +193,7 @@ class Api
     public function isShippingRateDropPoint($method)
     {
         $explode = explode('_', $method ?? '');
-        if(count($explode) > 2){
+        if (count($explode) > 2) {
             return (int)explode('_', $method ?? '')[2] === 1;
         }
         return false;
@@ -603,6 +603,7 @@ class Api
             $tarif = $this->config->getTarifForOrderLine($item);
             $manufacturer = $this->config->getManufacturerForOrderLine($item);
             $location = $this->config->getLocationForOrderLine($item);
+            $dangerousGoods = $this->config->getDangerousGoodsForOrderLine($item);
             $additionalAttributes = $this->config->getAdditionalAttributesForOrderLine($item);
             $orderLine = [
                 "sku" => $sku,
@@ -618,6 +619,7 @@ class Api
                 "weight" => $weight,
                 "weight_unit" => $this->config->getWeightUnit(),
                 "is_virtual" => $item->getIsVirtual(),
+                "dangerous_goods_details" => $dangerousGoods,
                 "additional_attributes" => $additionalAttributes
             ];
             $orderLines[] = $this->array_remove_empty($orderLine);

@@ -544,6 +544,15 @@ class Config
         return false;
     }
 
+    public function getDangerousGoodsForOrderLine($item)
+    {
+        $configValue = $this->getValueFromOrderLine($item, 'dangerous_goods');
+        if ($configValue) {
+            return $configValue;
+        }
+        return false;
+    }
+
     public function getAdditionalAttributesForOrderLine($item)
     {
         $configValue = $this->getValueFromOrderLine($item, 'additional_attributes');

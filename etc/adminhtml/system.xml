@@ -148,6 +148,7 @@
                 <field id="create_shipment_automatically" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Create Shipment Automatically</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>This applies only for webshipper, if you want to automatically create shipments in magento when a shipment is created in webshipper, check Order System settings in webshipper</comment>
                 </field>
                 
                 <field id="external_comment" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -188,6 +189,7 @@
                 <field id="dangerous_goods" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Dangerous Goods:</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\Product\DangerousGoods</source_model>
+                    <comment>See https://docs.webshipper.io/#order_lines for more details ( under dangerous_goods_details ) </comment>
                 </field>
                 <field id="manufacturer" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Manufacturer (country_of_origin)</label>
