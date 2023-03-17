@@ -115,6 +115,19 @@ class Index extends Action
             }
         }
 
+        $updateResponse = $this->api->updateOrderChannel($orderChannelId, [
+            "data" => [
+                "id" => $orderChannelId,
+                "type" => "order_channels",
+                'attributes' => [
+                    'auto_order_import' => true
+                ]
+            ]
+        ]);
+        if (!$updateResponse) {
+            $this->messageManager->addErrorMessage(__('An error occurred while updating the order_channel in webshipper.'));
+        }
+
         $orderChannelAttributes = $this->mapOrderChannelAttributes($response['data']['attributes']['attrs']);
 
         foreach ($orderChannelAttributes as $key => $attribute) {

@@ -295,6 +295,28 @@ class Api
         }, $parcelShops);
     }
 
+    public function updateOrderChannel($orderChannelId, $data)
+    {
+        try {
+            return $this->request(function (Client $client) use ($orderChannelId, $data) {
+                return $client->patch(
+                    "/v2/order_channels/" . $orderChannelId,
+                    [
+                        'json' => $data,
+                        'headers' => [
+                            'Accept' => 'application/vnd.api+json',
+                            'Content-Type' => 'application/vnd.api+json'
+                        ]
+                    ]
+                );
+            }, function (Response $response, $content) {
+                return $content;
+            });
+        } catch (\Throwable $t) {
+            return false;
+        }
+    }
+
     public function orderChannel($orderChannelId)
     {
         try {
