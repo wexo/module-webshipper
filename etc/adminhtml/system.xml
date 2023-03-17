@@ -120,16 +120,30 @@
                 <label>General Settings</label>
                 <attribute type="expanded">1</attribute>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enabled</label>
+                    <label>Enable Order Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <model>Wexo\Webshipper\Model\Config\LinkToDeliveryMethodsSettings</model>
                     </comment>
                 </field>
 
+                <field id="verify_connection" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Verify Connection</label>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\VerifyConnection</frontend_model>
+                    <comment>
+                        <model>Wexo\Webshipper\Model\Config\LinkToConfigurationsToken</model>
+                    </comment>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
+                </field>
+
                 <field id="show_button_on_order" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Show button on Order Edit Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
                 </field>
                 <field  id="export_order_status"
                         translate="label"
@@ -140,6 +154,9 @@
                         showInStore="1">
                     <label>Export Order to Webshipper when order status is:</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
                 </field>
             </group>
             <group id="order" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -169,6 +186,16 @@
                     <source_model>Wexo\Webshipper\Model\Config\Source\Order\VisibleReference</source_model>
                     <comment>This field is what you see in webshipper backend</comment>
                 </field>
+
+
+                <field id="additional_attributes" translate="label" type="multiselect" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Order Data</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\AdditionalAttributes</source_model>
+                </field>
+
+                <depends>
+                    <field id="webshipper/settings/enabled">1</field>
+                </depends>
             </group>
 
             <group id="order_line" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -207,6 +234,10 @@
                     <label>Additional Product Data</label>
                     <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
                 </field>
+
+                <depends>
+                    <field id="webshipper/settings/enabled">1</field>
+                </depends>
             </group>
         </section>
     </system>

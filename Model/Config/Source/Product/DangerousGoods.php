@@ -6,7 +6,7 @@ class DangerousGoods extends \Wexo\Webshipper\Model\Config\Source\ProductAttribu
     public function getDefaultOption()
     {
         return [
-            'value' => '0',
+            'value' => null,
             'label' => __('-- Use Default (none) --')
         ];
     }

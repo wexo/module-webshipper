@@ -40,13 +40,25 @@ class Config
      */
     private $customerSession;
 
+    /**
+     * @var \Magento\Framework\App\Config\Storage\WriterInterface
+     */
+    private $configWriter;
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    private $storeManager;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Base64Json $base64Json,
         \Magento\Framework\Serialize\Serializer\Json $json,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
 
         $this->scopeConfig = $scopeConfig;
@@ -55,6 +67,8 @@ class Config
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
+        $this->configWriter = $configWriter;
+        $this->storeManager = $storeManager;
     }
 
     public function getConfigurationToken()
@@ -95,10 +109,21 @@ class Config
             'webshipper/settings/export_order_status',
             ScopeInterface::SCOPE_STORE
         );
-        if(is_string($value)) {
+        if (is_string($value)) {
             $value = explode(',', $value);
         }
         return $value ?? false;
+    }
+    public function updateExportOrderAtStatus($data)
+    {
+        $value = $data['attr_value'] ?? [];
+        $value = implode(',', $value);
+        $this->configWriter->save(
+            'webshipper/settings/export_order_status',
+            $value,
+            $this->storeManager->getStore()->getId() === "0" ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
+        );
     }
 
     public function showCarrierLogo()
@@ -114,6 +139,16 @@ class Config
         return $this->scopeConfig->getValue(
             'carriers/webshipper/product_weight_unit',
             ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function updateWeightUnit($value)
+    {
+        $this->configWriter->save(
+            'carriers/webshipper/product_weight_unit',
+            $data['attr_value'] ?? null,
+            $this->storeManager->getStore()->getId() === "0" ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
         );
     }
 
@@ -415,7 +450,7 @@ class Config
         );
         if (!empty($configValue) && $configValue !== '0' && $configValue !== null) {
             $orderValue = $order->getData($configValue);
-            if(!empty($orderValue) && $orderValue !== null) {
+            if (!empty($orderValue) && $orderValue !== null) {
                 return $orderValue;
             }
         }
@@ -464,17 +499,16 @@ class Config
             'webshipper/order_line/' . $field,
             ScopeInterface::SCOPE_STORE
         );
-        if(is_string($configValue)){
+        if (is_string($configValue)) {
             $configValue = explode(',', $configValue);
             $product = $item->getProduct();
             $returnValue = [];
-            foreach($configValue as $value)
-            {
+            foreach ($configValue as $value) {
                 $returnValue[$value] = $product->getData($value);
             }
-            if($field === 'additional_attributes'){
+            if ($field === 'additional_attributes') {
                 return $returnValue;
-            }else{
+            } else {
                 return array_values($returnValue)[0] ?? false;
             }
         }
@@ -562,11 +596,48 @@ class Config
         return [];
     }
 
+    public function updateOrderLineAdditionalData($data)
+    {
+        $this->configWriter->save(
+            'webshipper/order_line/additional_attributes',
+            $data['attr_value'] ?? null,
+            $this->storeManager->getStore()->getId() === "0" ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
+        );
+    }
+
     public function isExportEnabled()
     {
         return $this->scopeConfig->getValue(
             'webshipper/settings/enabled',
             ScopeInterface::SCOPE_STORE
         ) === '1';
+    }
+
+    public function getAdditionalAttributesForOrder($order)
+    {
+        $configValue = $this->scopeConfig->getValue(
+            'webshipper/order/additional_attributes',
+            ScopeInterface::SCOPE_STORE
+        );
+        if (is_string($configValue)) {
+            $configValue = explode(',', $configValue);
+            $returnValue = [];
+            foreach ($configValue as $value) {
+                $returnValue[$value] = $order->getData($value);
+            }
+            return $returnValue;
+        }
+        return [];
+    }
+
+    public function updateOrderAdditionalData($data)
+    {
+        $this->configWriter->save(
+            'webshipper/order/additional_attributes',
+            $data['attr_value'] ?? null,
+            $this->storeManager->getStore()->getId() === "0" ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
+        );
     }
 }

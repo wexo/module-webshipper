@@ -4,7 +4,7 @@ namespace Wexo\Webshipper\Model\Config;
 
 use Magento\Framework\UrlInterface;
 
-class LinkToDeliveryMethodsSettings implements \Magento\Config\Model\Config\CommentInterface
+class LinkToConfigurationsToken implements \Magento\Config\Model\Config\CommentInterface
 {
     protected $urlInterface;
 
@@ -16,9 +16,10 @@ class LinkToDeliveryMethodsSettings implements \Magento\Config\Model\Config\Comm
 
     public function getCommentText($elementValue)
     {
+        $message = __('This will also syncronize your settings from webshipper.');
         $url = $this->urlInterface->getUrl('*/*/*/section/carriers/');
-        $url = '<a href="' . $url . '#carriers_webshipper-link">'.__('Delivery Methods').'</a>';
-        $message = __('For Rate Quotes settings click here: %1', $url);
+        $url = '<a href="' . $url . '#carriers_webshipper_configuration_token">' . __('Configuration Token') . '</a>';
+        $message .= '<br>' . __('Click here to see your Configuration Token: %1', $url);
         return $message;
     }
 }

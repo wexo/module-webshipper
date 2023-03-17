@@ -18,7 +18,7 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
     public function getDefaultOption()
     {
         return [
-            'value' => '',
+            'value' => null,
             'label' => __('-- Use Default --')
         ];
     }

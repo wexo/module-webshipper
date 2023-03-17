@@ -6,7 +6,7 @@ class Manufacturer extends \Wexo\Webshipper\Model\Config\Source\ProductAttribute
     public function getDefaultOption()
     {
         return [
-            'value' => '0',
+            'value' => null,
             'label' => __('-- Use Default (manufacturer) --')
         ];
     }

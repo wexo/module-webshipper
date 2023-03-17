@@ -295,9 +295,67 @@ class Api
         }, $parcelShops);
     }
 
+    public function orderChannel($orderChannelId)
+    {
+        try {
+            return $this->request(function (Client $client) use ($orderChannelId) {
+                return $client->get(
+                    "/v2/order_channels/" . $orderChannelId,
+                    [
+                        'headers' => [
+                            'Accept' => 'application/vnd.api+json',
+                            'Content-Type' => 'application/vnd.api+json'
+                        ]
+                    ]
+                );
+            }, function (Response $response, $content) {
+                return $content;
+            });
+        } catch (ClientException $e) {
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::OrderChannel :: Client Exception',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+            return [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'type' => 'client',
+            ];
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::OrderChannel :: Request Exception',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+            return [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'type' => 'request',
+            ];
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                '\Wexo\Webshipper\Model\Api::OrderChannel :: Throwable Exception',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+            return [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'type' => 'throwable',
+            ];
+        }
+    }
+
     public function exportOrder(\Magento\Sales\Model\Order $order)
     {
-        if(!$this->config->isExportEnabled()){
+        if (!$this->config->isExportEnabled()) {
             return false;
         }
         $this->emulation->startEnvironmentEmulation($order->getStoreId(), \Magento\Framework\App\Area::AREA_FRONTEND, true);
@@ -337,7 +395,6 @@ class Api
                     $state = self::WEBSHIPPER_ORDER_STATE_EXPORTED;
                     $order->addCommentToStatusHistory('Order exported to Webshipper: ' . $webshipperId);
                     $order->setData('webshipper_id', $webshipperId);
-                    
                 } else {
                     $message = $content;
                     $state = self::WEBSHIPPER_ORDER_STATE_FAILED;
@@ -506,6 +563,11 @@ class Api
                 ]
             ]
         ];
+
+        $additionalAttributes = $this->config->getAdditionalAttributesForOrder($order);
+        if (!empty($additionalAttributes)) {
+            $dto['data']['attributes']['additional_attributes'] = $additionalAttributes;
+        }
         if ($createShipmentAutomatically) {
             $dto['data']['attributes']['create_shipment_automatically'] = true;
         }

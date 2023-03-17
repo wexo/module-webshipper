@@ -49,7 +49,7 @@ class ProductAttributes implements \Magento\Framework\Option\ArrayInterface
     public function getDefaultOption()
     {
         return [
-            'value' => '0',
+            'value' => null,
             'label' => __('-- Please Select --')
         ];
     }
@@ -71,6 +71,9 @@ class ProductAttributes implements \Magento\Framework\Option\ArrayInterface
             $this->getDefaultOption()
         ];
         foreach ($attributeRepository->getItems() as $items) {
+            if(empty($items->getFrontendLabel())) {
+                continue;
+            }
             $options[] = [
                 'value' => $items->getAttributeCode(),
                 'label' => $items->getFrontendLabel()
