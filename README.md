@@ -156,7 +156,8 @@ When shipping from country to country you need to be aware of the different taxe
 From the Webshipper API Documentation:
 ```
 dangerous_goods_details object
-Optional object of key value pairs used for providing information of dangerous goods. For use with DGOffice, use keys: article_no, package_type_id and packaging_instruction_type.
+Optional object of key value pairs used for providing information of dangerous goods. 
+For use with DGOffice, use keys: article_no, package_type_id and packaging_instruction_type.
 ```
 We recommend you store a JSON object on your product with the required information
 
