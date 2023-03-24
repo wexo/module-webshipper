@@ -75,11 +75,17 @@ In order to ensure the connection to webshipper is setup correctly we recommend 
 
 This button attempts to communicate with Webshipper using the `Configuration Token` setup in an earlier step. It will also attempt to copy the settings setup from the Order Channel ( `transfer_status`, `weight_unit`, `additional_item_attributes`, `additional_order_attributes` )
 
+Upon successful connection you will also see the `Order Channel` has a new banner:
+
+![Automatic Import Enabled](/readme/webshipper_automatic_import.png)
+
 Known issues:
 
 - No token - if you have not completed the `Configration Token` step, please do so
 
 - Permissions, if you get a 403 HTTP Response it might be because your `Configuration Token` needs to be refreshed, you can refresh it from Webshippers Admin panel under `Connect => Order Channel => Information` and hit the refresh button. Then insert the new `Configuration Token` in Magento following the Step from above
+
+![Update Configuration Token](/readme/webshipper_update_configuration_token.png)
 
 #### Order Status
 
