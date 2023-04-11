@@ -84,6 +84,10 @@ class ParcelShop extends AbstractParcelShop implements MethodTypeHandlerInterfac
         $this->dataObjectHelper->populateWithArray($parcelShop, $shippingData['parcelShop'], $this->parcelShopClass);
 
         if ($parcelShop->getNumber()) {
+            
+            $shippingData['shipping_address'] = $order->getShippingAddress()->getData();
+            $order->setData('wexo_shipping_data', $this->jsonSerializer->serialize($shippingData));
+
             $order->getShippingAddress()->addData([
                 OrderAddressInterface::COMPANY => $parcelShop->getCompanyName(),
                 OrderAddressInterface::STREET => [

@@ -46,6 +46,14 @@ class ProductAttributes implements \Magento\Framework\Option\ArrayInterface
         $this->sortOrder = $sortOrder;
     }
 
+    public function getDefaultOption()
+    {
+        return [
+            'value' => null,
+            'label' => __('-- Please Select --')
+        ];
+    }
+
     /**
      * @return array
      */
@@ -59,17 +67,21 @@ class ProductAttributes implements \Magento\Framework\Option\ArrayInterface
             'catalog_product',
             $searchCriteria
         );
-        $options = [];
+        $options = [
+            $this->getDefaultOption()
+        ];
         foreach ($attributeRepository->getItems() as $items) {
+            if(empty($items->getFrontendLabel())) {
+                continue;
+            }
             $options[] = [
                 'value' => $items->getAttributeCode(),
                 'label' => $items->getFrontendLabel()
             ];
         }
-        uksort($options, function ($a, $b) {
-            $a = mb_strtolower($a);
-            $b = mb_strtolower($b);
-            return strcmp($a, $b);
+
+        usort($options, function ($a, $b) {
+            return strcmp($a['label'] ?? '', $b['label'] ?? '');
         });
         return $options;
     }

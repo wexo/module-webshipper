@@ -20,6 +20,9 @@
                        showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <model>Wexo\Webshipper\Model\Config\LinkToWebshipperSettings</model>
+                    </comment>
                 </field>
                 <field id="configuration_token"
                        translate="label"
@@ -39,16 +42,6 @@
                        showInStore="1">
                     <label>Show Carrier Logo</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="export_order_at_status"
-                       translate="label"
-                       type="multiselect"
-                       sortOrder="10"
-                       showInDefault="1"
-                       showInWebsite="1"
-                       showInStore="1">
-                    <label>Export Order to Webshipper when order status is:</label>
-                    <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
                 </field>
                 <field id="product_weight_unit"
                        translate="label"
@@ -117,6 +110,134 @@
                     <comment><![CDATA[<a href='https://docs.webshipper.io/#order_lines'>Webshipper Order Line Documentation</a>]]></comment>
                 </field>
                 -->
+            </group>
+        </section>
+        <section id="webshipper" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Webshipper</label>
+            <tab>sales</tab>
+            <resource>Wexo_Webshipper::config</resource>
+            <group id="settings" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Order Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <model>Wexo\Webshipper\Model\Config\LinkToDeliveryMethodsSettings</model>
+                    </comment>
+                </field>
+
+                <field id="verify_connection" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Verify Connection</label>
+                    <frontend_model>Wexo\Webshipper\Block\Adminhtml\System\Config\VerifyConnection</frontend_model>
+                    <comment>
+                        <model>Wexo\Webshipper\Model\Config\LinkToConfigurationsToken</model>
+                    </comment>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="show_button_on_order" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show button on Order Edit Page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
+                </field>
+                <field  id="export_order_status"
+                        translate="label"
+                        type="multiselect"
+                        sortOrder="10"
+                        showInDefault="1"
+                        showInWebsite="1"
+                        showInStore="1">
+                    <label>Export Order to Webshipper when order status is:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\OrderStatus</source_model>
+                    <depends>
+                        <field id="webshipper/settings/enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="order" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="create_shipment_automatically" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Create Shipment Automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>This applies only for webshipper, if you want to automatically create shipments in magento when a shipment is created in webshipper, check Order System settings in webshipper</comment>
+                </field>
+                
+                <field id="external_comment" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Comment</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\ExternalComment</source_model>
+                </field>
+                <field id="internal_comment" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Internal Comment</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\InternalComment</source_model>
+                </field>
+                <field id="ext_ref" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\ExternalReference</source_model>
+                    <comment>This will not affect previous orders. OBS: editing this field has consequences if you expect webshipper to handle capture/shipments as this is the order_id reference field</comment>
+                </field>
+                <field id="visible_ref" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Visible Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\VisibleReference</source_model>
+                    <comment>This field is what you see in webshipper backend</comment>
+                </field>
+
+
+                <field id="additional_attributes" translate="label" type="multiselect" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Order Data</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Order\AdditionalAttributes</source_model>
+                </field>
+
+                <depends>
+                    <field id="webshipper/settings/enabled">1</field>
+                </depends>
+            </group>
+
+            <group id="order_line" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order Line Settings</label>
+                <attribute type="expanded">1</attribute>
+                <field id="sku" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Identifier (sku)</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\Identifier</source_model>
+                </field>
+                <field id="ext_ref" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>External Reference</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\ExternalReference</source_model>
+                </field>
+                <field id="description" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Description</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\Description</source_model>
+                </field>
+                <field id="dangerous_goods" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Dangerous Goods:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\DangerousGoods</source_model>
+                    <comment>See https://docs.webshipper.io/#order_lines for more details ( under dangerous_goods_details ) </comment>
+                </field>
+                <field id="manufacturer" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Manufacturer (country_of_origin)</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\Manufacturer</source_model>
+                </field>
+                <field id="tarif_number" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tarif:</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\Tarif</source_model>
+                </field>
+                <field id="weight_attribute" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Weight</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\Product\Weight</source_model>
+                </field>
+                <field id="additional_attributes" translate="label" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Product Data</label>
+                    <source_model>Wexo\Webshipper\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+
+                <depends>
+                    <field id="webshipper/settings/enabled">1</field>
+                </depends>
             </group>
         </section>
     </system>
