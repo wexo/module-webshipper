@@ -128,24 +128,28 @@ class Index extends Action
             $this->messageManager->addErrorMessage(__('An error occurred while updating the order_channel in webshipper.'));
         }
 
-        $orderChannelAttributes = $this->mapOrderChannelAttributes($response['data']['attributes']['attrs']);
+        if(!empty($response['data']['attributes']['attrs'])){
+            $orderChannelAttributes = $this->mapOrderChannelAttributes($response['data']['attributes']['attrs']);
 
-        foreach ($orderChannelAttributes as $key => $attribute) {
-            $this->handleOrderChannelAttribute($key, $attribute);
+            foreach ($orderChannelAttributes as $key => $attribute) {
+                $this->handleOrderChannelAttribute($key, $attribute);
+            }
+
+            $this->configWriter->save(
+                'webshipper/settings/enabled',
+                1,
+                $this->storeManager->getStore()->getId() === '0' ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+                $this->storeManager->getStore()->getId()
+            );
+
+            $this->emulation->stopEnvironmentEmulation();
+
+            $this->cacheTypeList->cleanType('config');
+
+            $this->messageManager->addSuccessMessage(__('Your configuration token has been verified successfully.'));
+        }else{
+            $this->messageManager->addErrorMessage(__('Found no settings for the given Order Channel, please verify the Order Channel settings and the configuration token'));
         }
-
-        $this->configWriter->save(
-            'webshipper/settings/enabled',
-            1,
-            $this->storeManager->getStore()->getId() === '0' ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
-            $this->storeManager->getStore()->getId()
-        );
-
-        $this->emulation->stopEnvironmentEmulation();
-
-        $this->cacheTypeList->cleanType('config');
-
-        $this->messageManager->addSuccessMessage(__('Your configuration token has been verified successfully.'));
 
         // Redirect to the configuration page
         $resultRedirect->setUrl($this->_url->getUrl('adminhtml/system_config/edit', ['section' => 'webshipper']));
