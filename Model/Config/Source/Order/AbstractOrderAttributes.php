@@ -36,7 +36,7 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
         // $reflectionClass = new \ReflectionClass(\Magento\Sales\Model\Order::class);
         // $constants = $reflectionClass->getConstants();
         // foreach($constants as $constant){
-        //     $human = str_replace('_', ' ', $constant);
+        //     $human = str_replace('_', ' ', $constant ?? '');
         //     $human = ucwords($human);
         //     $options[] = [
         //         'value' => $constant,
@@ -46,7 +46,7 @@ class AbstractOrderAttributes implements \Magento\Framework\Data\OptionSourceInt
 
         $salesOrder = $this->resourceConnection->getConnection()->describeTable('sales_order');
         foreach (array_keys($salesOrder) as $attribute) {
-            $human = str_replace('_', ' ', $attribute);
+            $human = str_replace('_', ' ', $attribute ?? '');
             $human = ucwords($human);
             $options[] = [
                 'value' => $attribute,

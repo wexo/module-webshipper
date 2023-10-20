@@ -24,10 +24,10 @@ class ExportOrderButton
         }
         $order = $subject->getOrder();
         $shippingMethod = $order->getShippingMethod();
-        if(strpos($shippingMethod, 'webshipper') === false) {
+        if(strpos($shippingMethod ?? '', 'webshipper') === false) {
             return;
         }
-        
+
         $subject->addButton(
             'webshipper_order_export',
             [

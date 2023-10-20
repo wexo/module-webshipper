@@ -234,7 +234,7 @@ class Api
             $baseUri = str_replace(
                 '//',
                 '//' . $this->config->getTenantName() . '.',
-                $this->config->getEndpoint()
+                $this->config->getEndpoint() ?? ''
             );
             $this->client = $this->clientFactory->create([
                 'config' => [
@@ -624,7 +624,7 @@ class Api
         $shippingFirstName = $shippingAddress->getFirstname() ?? '';
         $shippingLastName = $shippingAddress->getLastname() ?? '';
         $shippingFullName = $shippingFirstName . ' ' . $shippingLastName;
-        $shippingFullName = str_replace('  ', '', trim($shippingFullName)); // issue with dobbelt space for some clients
+        $shippingFullName = str_replace('  ', '', trim($shippingFullName ?? '')); // issue with dobbelt space for some clients
 
         return [
             "att_contact" => $shippingFullName,
@@ -644,7 +644,7 @@ class Api
         $billingFirstName = $billingAddress->getFirstname() ?? '';
         $billingLastName = $billingAddress->getLastname() ?? '';
         $billingFullName = $billingFirstName . ' ' . $billingLastName;
-        $billingFullName = str_replace('  ', '', trim($billingFullName)); // issue with dobbelt space for some clients
+        $billingFullName = str_replace('  ', '', trim($billingFullName ?? '')); // issue with dobbelt space for some clients
 
         return [
             "att_contact" => $billingFullName,
