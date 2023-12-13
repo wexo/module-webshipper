@@ -51,8 +51,8 @@ class WebshipperExportStatus extends Column
             foreach ($dataSource['data']['items'] as &$item) {
 
                 $order  = $this->_orderRepository->get($item["entity_id"]);
-                $shippingMethod = (string)$order->getShippingMethod();
-                if(strpos($shippingMethod, 'webshipper') === false) {
+                $shippingMethod = $order->getShippingMethod();
+                if(strpos($shippingMethod ?? '', 'webshipper') === false) {
                     $item[$this->getData('name')] = 'n/a';
                     continue;
                 }
