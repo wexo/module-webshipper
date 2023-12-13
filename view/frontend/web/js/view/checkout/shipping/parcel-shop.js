@@ -46,7 +46,6 @@ define([
                 // value has to be specificly declared to be included in said mapping. This means dynamic content
                 // can not be translated if the expected translation has not been used elsewhere in a static reference.
                 let staticReference = [$t("Monday"),$t("Tuesday"),$t("Wednesday"),$t("Thursday"),$t("Friday"),$t("Saturday"),$t("Sunday")];
-                console.log(parcelShop);
                 if (parcelShop.opening_hours.length && parcelShop.opening_hours) {
                     var openingHours = JSON.parse(parcelShop.opening_hours);
                     var formattedHours = [];
