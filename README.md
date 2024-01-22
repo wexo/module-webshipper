@@ -170,9 +170,9 @@ Like the `Order` settings you also have the ability to customize how you want ea
 
 The identifier attribute is used to seperate each entity on the order lines, this is usually the `sku` of the product, but if you want to show webshipper a different identifier this is the one to change
  
-#### External Reference ( `product_id` / `entity_id` )
+#### External Reference ( `item_id` )
 
-The `External Reference` is used by external providers incase you have a custom integration with Webshipper.
+The `External Reference` is used by external providers incase you have a custom integration with Webshipper. This must be set to `item_id` in order for Webshipper to be able to create shipments in Magento.
 
 #### Description ( `name` )
 
