@@ -7,7 +7,7 @@ class ExternalReference extends \Wexo\Webshipper\Model\Config\Source\ProductAttr
     {
         return [
             'value' => null,
-            'label' => __('-- Use Default (product_id) --')
+            'label' => __('-- Use Default (item_id) --')
         ];
     }
 }

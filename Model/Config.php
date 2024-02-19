@@ -504,7 +504,11 @@ class Config
             $product = $item->getProduct();
             $returnValue = [];
             foreach ($configValue as $value) {
-                $returnValue[$value] = $product->getData($value);
+                if ($value === 'item_id') {
+                    $returnValue[$value] = $item->getData($value);
+                } else {
+                    $returnValue[$value] = $product->getData($value);
+                }
             }
             if ($field === 'additional_attributes') {
                 return $returnValue;
@@ -535,11 +539,11 @@ class Config
 
     public function getExternalReferenceForOrderLine($item)
     {
-        $configValue = $this->getValueFromOrderLine($item, 'external_reference');
+        $configValue = $this->getValueFromOrderLine($item, 'ext_ref');
         if ($configValue) {
             return $configValue;
         }
-        return $item->getProductId();
+        return $item->getId();
     }
 
     public function getWeightForOrderLine($item)

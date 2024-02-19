@@ -79,6 +79,10 @@ class ProductAttributes implements \Magento\Framework\Option\ArrayInterface
                 'label' => $items->getFrontendLabel()
             ];
         }
+        $options[] = [
+            'value' => 'item_id',
+            'label' => 'Item ID'
+        ];
 
         usort($options, function ($a, $b) {
             return strcmp($a['label'] ?? '', $b['label'] ?? '');
