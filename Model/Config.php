@@ -543,7 +543,7 @@ class Config
         if ($configValue) {
             return $configValue;
         }
-        return $item->getItemId();
+        return $item->getId();
     }
 
     public function getWeightForOrderLine($item)
