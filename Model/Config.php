@@ -505,7 +505,21 @@ class Config
             $returnValue = [];
             foreach ($configValue as $value) {
                 if ($value === 'item_id') {
-                    $returnValue[$value] = $item->getData($value);
+                    if ($item->getProductType() === 'bundle'
+                        && $item->getProductOptionByCode('shipment_type') === '1'
+                    ) {
+                        $returnValue[$value] = '';
+                    } else {
+                        $parentItem = $item->getParentItem();
+                        if ($parentItem
+                            && $parentItem->getProductType() === 'bundle'
+                            && $parentItem->getProductOptionByCode('shipment_type') === '0'
+                        ) {
+                            $returnValue[$value] = '';
+                        } else {
+                            $returnValue[$value] = $item->getData($value);
+                        }
+                    }
                 } else {
                     $returnValue[$value] = $product->getData($value);
                 }
@@ -543,7 +557,18 @@ class Config
         if ($configValue) {
             return $configValue;
         }
-        return $item->getId();
+        if ($item->getProductType() === 'bundle' && $item->getProductOptionByCode('shipment_type') === '1') {
+            return '';
+        } else {
+            $parentItem = $item->getParentItem();
+            if ($parentItem
+                && $parentItem->getProductType() === 'bundle'
+                && $parentItem->getProductOptionByCode('shipment_type') === '0'
+            ) {
+                return '';
+            }
+            return $item->getId();
+        }
     }
 
     public function getWeightForOrderLine($item)
