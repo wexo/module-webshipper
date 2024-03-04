@@ -514,7 +514,7 @@ class Config
                     } else {
                         $parentItem = $item->getParentItem();
                         if ($parentItem
-                            && $parentItem->getProductType() === 'bundle'
+                            && $parentItem->getProductType() === Type::TYPE_BUNDLE
                             && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
                         ) {
                             $returnValue[$value] = '';
@@ -566,7 +566,7 @@ class Config
         } else {
             $parentItem = $item->getParentItem();
             if ($parentItem
-                && $parentItem->getProductType() === 'bundle'
+                && $parentItem->getProductType() === Type::TYPE_BUNDLE
                 && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
             ) {
                 return '';
