@@ -2,6 +2,8 @@
 
 namespace Wexo\Webshipper\Model;
 
+use Magento\Catalog\Model\Product\Type;
+use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\Serializer\Base64Json;
@@ -505,7 +507,21 @@ class Config
             $returnValue = [];
             foreach ($configValue as $value) {
                 if ($value === 'item_id') {
-                    $returnValue[$value] = $item->getData($value);
+                    if ($item->getProductType() === Type::TYPE_BUNDLE
+                        && $item->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_SEPARATELY
+                    ) {
+                        $returnValue[$value] = '';
+                    } else {
+                        $parentItem = $item->getParentItem();
+                        if ($parentItem
+                            && $parentItem->getProductType() === Type::TYPE_BUNDLE
+                            && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
+                        ) {
+                            $returnValue[$value] = '';
+                        } else {
+                            $returnValue[$value] = $item->getData($value);
+                        }
+                    }
                 } else {
                     $returnValue[$value] = $product->getData($value);
                 }
@@ -543,7 +559,20 @@ class Config
         if ($configValue) {
             return $configValue;
         }
-        return $item->getId();
+        if ($item->getProductType() === Type::TYPE_BUNDLE
+            && $item->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_SEPARATELY
+        ) {
+            return '';
+        } else {
+            $parentItem = $item->getParentItem();
+            if ($parentItem
+                && $parentItem->getProductType() === Type::TYPE_BUNDLE
+                && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
+            ) {
+                return '';
+            }
+            return $item->getId();
+        }
     }
 
     public function getWeightForOrderLine($item)
