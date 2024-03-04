@@ -560,14 +560,14 @@ class Config
             return $configValue;
         }
         if ($item->getProductType() === Type::TYPE_BUNDLE
-            && $item->getProductOptionByCode('shipment_type') === AbstractType::SHIPMENT_SEPARATELY
+            && $item->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_SEPARATELY
         ) {
             return '';
         } else {
             $parentItem = $item->getParentItem();
             if ($parentItem
                 && $parentItem->getProductType() === 'bundle'
-                && $parentItem->getProductOptionByCode('shipment_type') === AbstractType::SHIPMENT_TOGETHER
+                && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
             ) {
                 return '';
             }
