@@ -508,14 +508,14 @@ class Config
             foreach ($configValue as $value) {
                 if ($value === 'item_id') {
                     if ($item->getProductType() === Type::TYPE_BUNDLE
-                        && $item->getProductOptionByCode('shipment_type') === AbstractType::SHIPMENT_SEPARATELY
+                        && $item->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_SEPARATELY
                     ) {
                         $returnValue[$value] = '';
                     } else {
                         $parentItem = $item->getParentItem();
                         if ($parentItem
                             && $parentItem->getProductType() === 'bundle'
-                            && $parentItem->getProductOptionByCode('shipment_type') === AbstractType::SHIPMENT_TOGETHER
+                            && $parentItem->getProductOptionByCode('shipment_type') == AbstractType::SHIPMENT_TOGETHER
                         ) {
                             $returnValue[$value] = '';
                         } else {
