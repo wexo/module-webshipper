@@ -111,7 +111,7 @@ class Config
             'webshipper/settings/export_order_status',
             ScopeInterface::SCOPE_STORE
         );
-        if (is_string($value ?? '')) {
+        if (is_string($value)) {
             $value = explode(',', $value);
         }
         return $value ?? false;
@@ -501,7 +501,7 @@ class Config
             'webshipper/order_line/' . $field,
             ScopeInterface::SCOPE_STORE
         );
-        if (is_string($configValue ?? '')) {
+        if (is_string($configValue)) {
             $configValue = explode(',', $configValue);
             $product = $item->getProduct();
             $returnValue = [];
@@ -653,7 +653,7 @@ class Config
             'webshipper/order/additional_attributes',
             ScopeInterface::SCOPE_STORE
         );
-        if (is_string($configValue ?? '')) {
+        if (is_string($configValue)) {
             $configValue = explode(',', $configValue);
             $returnValue = [];
             foreach ($configValue as $value) {
