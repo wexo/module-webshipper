@@ -3,4 +3,8 @@
     <type name="Magento\Sales\Block\Adminhtml\Order\View">
         <plugin name="sales_order_adminhtml_webshipper_export_order_button" type="Wexo\Webshipper\Plugin\Sales\Block\Adminhtml\Order\ExportOrderButton"/>
     </type>
+    <!-- Sale order grid -->
+    <type name="Magento\Sales\Model\ResourceModel\Order\Grid\Collection">
+        <plugin name="webshipperSalesOrderGrid" type="Wexo\Webshipper\Plugin\Sales\SalesOrderGridPlugin" />
+    </type>
 </config>
