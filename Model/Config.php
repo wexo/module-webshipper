@@ -74,7 +74,7 @@ class Config
     /**
      * @var GetDefaultSourceSelectionAlgorithmCodeInterface
      */
-    private GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode;
+    private $getDefaultSourceSelectionAlgorithmCode;
     /**
      * @var ItemRequestInterfaceFactory
      */
