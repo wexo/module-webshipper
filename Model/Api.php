@@ -597,6 +597,12 @@ class Api
             $dto['data']['attributes']['drop_point'] = $dropPoint;
         }
 
+        if ($this->config->msiEnabled()) {
+            $dto['data']['msi'] = [
+                'msi_enabled' => 'true',
+            ];
+        }
+
         $dto = $this->array_remove_empty($dto);
 
         // Reset Current Store
@@ -689,6 +695,10 @@ class Api
             $location = $this->config->getLocationForOrderLine($item);
             $dangerousGoods = $this->config->getDangerousGoodsForOrderLine($item);
             $additionalAttributes = $this->config->getAdditionalAttributesForOrderLine($item);
+            $source_code = $this->config->getSourceCode($item, $order->getEntityId());
+            if ($source_code) {
+                $additionalAttributes['source_code'] = $source_code;
+            }
             $orderLine = [
                 "sku" => $sku,
                 "description" => $description,

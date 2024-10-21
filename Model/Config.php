@@ -5,8 +5,15 @@ namespace Wexo\Webshipper\Model;
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Module\Manager;
+use Magento\InventoryApi\Api\SourceRepositoryInterface;
+use Magento\InventoryApi\Api\StockRepositoryInterface;
+use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterfaceFactory;
+use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
+use Magento\InventorySourceSelectionApi\Model\GetInventoryRequestFromOrder;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\Serializer\Base64Json;
+use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 
 class Config
 {
@@ -52,6 +59,35 @@ class Config
      */
     private $storeManager;
 
+    /**
+     * @var Manager
+     */
+    private $moduleManager;
+    /**
+     * @var SourceSelectionServiceInterface
+     */
+    private $sourceSelectionService;
+    /**
+     * @var GetInventoryRequestFromOrder
+     */
+    private $getInventoryRequestFromOrder;
+    /**
+     * @var GetDefaultSourceSelectionAlgorithmCodeInterface
+     */
+    private $getDefaultSourceSelectionAlgorithmCode;
+    /**
+     * @var ItemRequestInterfaceFactory
+     */
+    private $itemRequestFactory;
+    /**
+     * @var SourceRepositoryInterface
+     */
+    private $sourceRepository;
+    /**
+     * @var StockRepositoryInterface
+     */
+    private $stockRepository;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Base64Json $base64Json,
@@ -60,7 +96,14 @@ class Config
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        Manager $moduleManager,
+        SourceSelectionServiceInterface $sourceSelectionService,
+        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
+        ItemRequestInterfaceFactory $itemRequestFactory,
+        GetInventoryRequestFromOrder $getInventoryRequestFromOrder,
+        SourceRepositoryInterface $sourceRepository,
+        StockRepositoryInterface $stockRepository
     ) {
 
         $this->scopeConfig = $scopeConfig;
@@ -71,6 +114,13 @@ class Config
         $this->customerSession = $customerSession;
         $this->configWriter = $configWriter;
         $this->storeManager = $storeManager;
+        $this->moduleManager = $moduleManager;
+        $this->sourceSelectionService = $sourceSelectionService;
+        $this->getDefaultSourceSelectionAlgorithmCode = $getDefaultSourceSelectionAlgorithmCode;
+        $this->itemRequestFactory = $itemRequestFactory;
+        $this->getInventoryRequestFromOrder = $getInventoryRequestFromOrder;
+        $this->sourceRepository = $sourceRepository;
+        $this->stockRepository = $stockRepository;
     }
 
     public function getConfigurationToken()
@@ -672,5 +722,56 @@ class Config
             $this->storeManager->getStore()->getId() === "0" ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getId()
         );
+    }
+
+    public function getSourceCode($item, $orderId) {
+        if (!$this->msiEnabled()) {
+            return false;
+        }
+
+        $largestQty = 0;
+        $sourceCode = false;
+
+        // Get the default source selection algorithm code
+        $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
+        $requestItem = $this->itemRequestFactory->create([
+            'sku' => $item->getProduct()->getSku(),
+            'qty' => $item->getQtyToShip()
+        ]);
+
+        $inventoryRequest = $this->getInventoryRequestFromOrder->execute($orderId, [$requestItem]);
+        $sourceSelectionResult = $this->sourceSelectionService->execute(
+            $inventoryRequest,
+            $algorithmCode
+        );
+
+        foreach ($sourceSelectionResult->getSourceSelectionItems() as $sourceItem) {
+            // For now, we'll send the source with the largest QtyToDeduct if deducting from multiple sources.
+            $qtyToDeduct = (int)$sourceItem->getQtyToDeduct();
+            if ($qtyToDeduct > $largestQty) {
+                $largestQty = $qtyToDeduct;
+                $sourceCode = $sourceItem->getSourceCode();
+            }
+        }
+
+        return $sourceCode;
+    }
+
+    public function msiEnabled() {
+        if (!$this->moduleManager->isEnabled('Magento_Inventory')) {
+            return false;  // MSI module is not enabled
+        }
+
+        $sources = $this->sourceRepository->getList();
+        if ($sources->getTotalCount() > 1) {
+            return true;  // More than one source, MSI is being used
+        }
+
+        $stocks = $this->stockRepository->getList();
+        if ($stocks->getTotalCount() > 1) {
+            return true;  // More than one stock, MSI is being used
+        }
+
+        return false;  // MSI is not set up
     }
 }
