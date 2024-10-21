@@ -724,7 +724,7 @@ class Config
         );
     }
 
-    public function getSourceCode($item, $orderId): bool|string {
+    public function getSourceCode($item, $orderId) {
         if (!$this->msiEnabled()) {
             return false;
         }
