@@ -724,30 +724,33 @@ class Config
         );
     }
 
-    public function getSourceCode($item, $orderId) {
-        $sourceCode = false;
+    public function getSourceCode($item, $orderId): bool|string {
+        if (!$this->msiEnabled()) {
+            return false;
+        }
+
         $largestQty = 0;
+        $sourceCode = false;
 
-        if ($this->moduleManager->isEnabled('Magento_Inventory')) {
-            $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
+        // Get the default source selection algorithm code
+        $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
+        $requestItem = $this->itemRequestFactory->create([
+            'sku' => $item->getProduct()->getSku(),
+            'qty' => $item->getQtyToShip()
+        ]);
 
-            $requestItem = $this->itemRequestFactory->create([
-                'sku' => $item->getProduct()->getSku(),
-                'qty' => $item->getQtyToShip(),
-            ]);
+        $inventoryRequest = $this->getInventoryRequestFromOrder->execute($orderId, [$requestItem]);
+        $sourceSelectionResult = $this->sourceSelectionService->execute(
+            $inventoryRequest,
+            $algorithmCode
+        );
 
-            $inventoryRequest = $this->getInventoryRequestFromOrder->execute($orderId, [$requestItem]);
-            $sourceSelectionResult = $this->sourceSelectionService->execute(
-                $inventoryRequest,
-                $algorithmCode
-            );
-
-            foreach ($sourceSelectionResult->getSourceSelectionItems() as $sourceItem) {
-                // For now, we'll send the source with the largest QtyToDeduct if deducting from multiple sources.
-                if ($sourceItem->getQtyToDeduct() > 0 && $sourceItem->getQtyToDeduct() > $largestQty) {
-                    $sourceCode =  $sourceItem->getSourceCode();
-                    $largestQty = $sourceItem->getQtyToDeduct();
-                }
+        foreach ($sourceSelectionResult->getSourceSelectionItems() as $sourceItem) {
+            // For now, we'll send the source with the largest QtyToDeduct if deducting from multiple sources.
+            $qtyToDeduct = (int)$sourceItem->getQtyToDeduct();
+            if ($qtyToDeduct > $largestQty) {
+                $largestQty = $qtyToDeduct;
+                $sourceCode = $sourceItem->getSourceCode();
             }
         }
 
