@@ -726,6 +726,7 @@ class Config
 
     public function getSourceCode($item, $orderId) {
         $sourceCode = false;
+        $largestQty = 0;
 
         if ($this->moduleManager->isEnabled('Magento_Inventory')) {
             $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
@@ -742,10 +743,10 @@ class Config
             );
 
             foreach ($sourceSelectionResult->getSourceSelectionItems() as $sourceItem) {
-                // For now we'll send the source with the largest QtyToDeduct
-                if ($sourceItem->getQtyToDeduct() > 0 && $sourceItem->getQtyToDeduct() > ($qty ?? 0)) {
+                // For now, we'll send the source with the largest QtyToDeduct if deducting from multiple sources.
+                if ($sourceItem->getQtyToDeduct() > 0 && $sourceItem->getQtyToDeduct() > $largestQty) {
                     $sourceCode =  $sourceItem->getSourceCode();
-                    $qty = $sourceItem->getQtyToDeduct();
+                    $largestQty = $sourceItem->getQtyToDeduct();
                 }
             }
         }
