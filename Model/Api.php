@@ -597,12 +597,6 @@ class Api
             $dto['data']['attributes']['drop_point'] = $dropPoint;
         }
 
-        if ($this->config->msiEnabled()) {
-            $dto['data']['msi'] = [
-                'msi_enabled' => 'true',
-            ];
-        }
-
         $dto = $this->array_remove_empty($dto);
 
         // Reset Current Store
@@ -695,10 +689,7 @@ class Api
             $location = $this->config->getLocationForOrderLine($item);
             $dangerousGoods = $this->config->getDangerousGoodsForOrderLine($item);
             $additionalAttributes = $this->config->getAdditionalAttributesForOrderLine($item);
-            $source_code = $this->config->getSourceCode($item, $order->getEntityId());
-            if ($source_code) {
-                $additionalAttributes['source_code'] = $source_code;
-            }
+
             $orderLine = [
                 "sku" => $sku,
                 "description" => $description,
@@ -716,7 +707,21 @@ class Api
                 "dangerous_goods_details" => $dangerousGoods,
                 "additional_attributes" => $additionalAttributes
             ];
-            $orderLines[] = $this->array_remove_empty($orderLine);
+
+            $source_codes = $this->config->getSourceCode($item, $order->getEntityId());
+            if (!empty($source_codes)) {
+                foreach ($source_codes as $source_code) {
+                    $orderLine['additional_attributes']['source_code'] = $source_code['source_code'];
+                    if (count($source_codes) > 1) {
+                        $orderLine['quantity'] = $source_code['qty_to_deduct'];
+                    }
+                    $orderLines[] = $this->array_remove_empty($orderLine);
+                }
+            }
+            else {
+                $orderLines[] = $this->array_remove_empty($orderLine);
+            }
+
         }
         return $orderLines;
     }

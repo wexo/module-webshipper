@@ -724,13 +724,13 @@ class Config
         );
     }
 
-    public function getSourceCode($item, $orderId) {
+    public function getSourceCode($item, $orderId)
+    {
         if (!$this->msiEnabled()) {
             return false;
         }
 
-        $largestQty = 0;
-        $sourceCode = false;
+        $sourceCode = [];
 
         // Get the default source selection algorithm code
         $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
@@ -746,18 +746,19 @@ class Config
         );
 
         foreach ($sourceSelectionResult->getSourceSelectionItems() as $sourceItem) {
-            // For now, we'll send the source with the largest QtyToDeduct if deducting from multiple sources.
-            $qtyToDeduct = (int)$sourceItem->getQtyToDeduct();
-            if ($qtyToDeduct > $largestQty) {
-                $largestQty = $qtyToDeduct;
-                $sourceCode = $sourceItem->getSourceCode();
+            if ((int)$sourceItem->getQtyToDeduct() > 0) {
+                $sourceCode[] = [
+                    'source_code' => $sourceItem->getSourceCode(),
+                    'qty_to_deduct' => $sourceItem->getQtyToDeduct()
+                ];
             }
         }
 
         return $sourceCode;
     }
 
-    public function msiEnabled() {
+    public function msiEnabled()
+    {
         if (!$this->moduleManager->isEnabled('Magento_Inventory')) {
             return false;  // MSI module is not enabled
         }
