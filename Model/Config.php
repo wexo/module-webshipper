@@ -10,10 +10,10 @@ use Magento\InventoryApi\Api\SourceRepositoryInterface;
 use Magento\InventoryApi\Api\StockRepositoryInterface;
 use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterfaceFactory;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
+use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\InventorySourceSelectionApi\Model\GetInventoryRequestFromOrder;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\Serializer\Base64Json;
-use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 
 class Config
 {
@@ -64,21 +64,21 @@ class Config
      */
     private $moduleManager;
     /**
-     * @var SourceSelectionServiceInterface
+     * @var SourceSelectionServiceInterface|null
      */
-    private $sourceSelectionService;
+    private ?SourceSelectionServiceInterface $sourceSelectionService;
     /**
-     * @var GetInventoryRequestFromOrder
+     * @var GetInventoryRequestFromOrder|null
      */
-    private $getInventoryRequestFromOrder;
+    private ?GetInventoryRequestFromOrder $getInventoryRequestFromOrder;
     /**
-     * @var GetDefaultSourceSelectionAlgorithmCodeInterface
+     * @var GetDefaultSourceSelectionAlgorithmCodeInterface|null
      */
-    private $getDefaultSourceSelectionAlgorithmCode;
+    private ?GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode;
     /**
-     * @var ItemRequestInterfaceFactory
+     * @var ItemRequestInterfaceFactory|null
      */
-    private $itemRequestFactory;
+    private ?ItemRequestInterfaceFactory $itemRequestFactory;
     /**
      * @var SourceRepositoryInterface
      */
@@ -98,14 +98,13 @@ class Config
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         Manager $moduleManager,
-        SourceSelectionServiceInterface $sourceSelectionService,
-        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
-        ItemRequestInterfaceFactory $itemRequestFactory,
-        GetInventoryRequestFromOrder $getInventoryRequestFromOrder,
         SourceRepositoryInterface $sourceRepository,
-        StockRepositoryInterface $stockRepository
+        StockRepositoryInterface $stockRepository,
+        SourceSelectionServiceInterface $sourceSelectionService = null,
+        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode = null,
+        ItemRequestInterfaceFactory $itemRequestFactory = null,
+        GetInventoryRequestFromOrder $getInventoryRequestFromOrder = null
     ) {
-
         $this->scopeConfig = $scopeConfig;
         $this->base64Json = $base64Json;
         $this->json = $json;
@@ -115,12 +114,12 @@ class Config
         $this->configWriter = $configWriter;
         $this->storeManager = $storeManager;
         $this->moduleManager = $moduleManager;
+        $this->sourceRepository = $sourceRepository;
+        $this->stockRepository = $stockRepository;
         $this->sourceSelectionService = $sourceSelectionService;
         $this->getDefaultSourceSelectionAlgorithmCode = $getDefaultSourceSelectionAlgorithmCode;
         $this->itemRequestFactory = $itemRequestFactory;
         $this->getInventoryRequestFromOrder = $getInventoryRequestFromOrder;
-        $this->sourceRepository = $sourceRepository;
-        $this->stockRepository = $stockRepository;
     }
 
     public function getConfigurationToken()
@@ -759,8 +758,9 @@ class Config
 
     public function msiEnabled()
     {
-        if (!$this->moduleManager->isEnabled('Magento_Inventory')) {
-            return false;  // MSI module is not enabled
+        if (!$this->moduleManager->isEnabled('Magento_Inventory') ||
+            !$this->moduleManager->isEnabled('Magento_InventorySourceSelectionApi')) {
+            return false;  // MSI or Magento_InventorySourceSelectionApi module is not enabled
         }
 
         $sources = $this->sourceRepository->getList();
