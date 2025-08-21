@@ -4,16 +4,18 @@ namespace Wexo\Webshipper\Model;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\InventoryApi\Api\SourceRepositoryInterface;
 use Magento\InventoryApi\Api\StockRepositoryInterface;
 use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterfaceFactory;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
+use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\InventorySourceSelectionApi\Model\GetInventoryRequestFromOrder;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\Serializer\Base64Json;
-use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 
 class Config
 {
@@ -64,22 +66,6 @@ class Config
      */
     private $moduleManager;
     /**
-     * @var SourceSelectionServiceInterface
-     */
-    private $sourceSelectionService;
-    /**
-     * @var GetInventoryRequestFromOrder
-     */
-    private $getInventoryRequestFromOrder;
-    /**
-     * @var GetDefaultSourceSelectionAlgorithmCodeInterface
-     */
-    private $getDefaultSourceSelectionAlgorithmCode;
-    /**
-     * @var ItemRequestInterfaceFactory
-     */
-    private $itemRequestFactory;
-    /**
      * @var SourceRepositoryInterface
      */
     private $sourceRepository;
@@ -87,6 +73,14 @@ class Config
      * @var StockRepositoryInterface
      */
     private $stockRepository;
+    /**
+     * @var ObjectManagerInterface
+     */
+    private $objectManager;
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private $searchCriteriaBuilder;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -98,14 +92,11 @@ class Config
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         Manager $moduleManager,
-        SourceSelectionServiceInterface $sourceSelectionService,
-        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
-        ItemRequestInterfaceFactory $itemRequestFactory,
-        GetInventoryRequestFromOrder $getInventoryRequestFromOrder,
         SourceRepositoryInterface $sourceRepository,
-        StockRepositoryInterface $stockRepository
+        StockRepositoryInterface $stockRepository,
+        ObjectManagerInterface $objectManager,
+        SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
-
         $this->scopeConfig = $scopeConfig;
         $this->base64Json = $base64Json;
         $this->json = $json;
@@ -115,12 +106,10 @@ class Config
         $this->configWriter = $configWriter;
         $this->storeManager = $storeManager;
         $this->moduleManager = $moduleManager;
-        $this->sourceSelectionService = $sourceSelectionService;
-        $this->getDefaultSourceSelectionAlgorithmCode = $getDefaultSourceSelectionAlgorithmCode;
-        $this->itemRequestFactory = $itemRequestFactory;
-        $this->getInventoryRequestFromOrder = $getInventoryRequestFromOrder;
         $this->sourceRepository = $sourceRepository;
         $this->stockRepository = $stockRepository;
+        $this->objectManager = $objectManager;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     public function getConfigurationToken()
@@ -730,17 +719,21 @@ class Config
             return false;
         }
 
+        $sourceSelectionService = $this->objectManager->get(SourceSelectionServiceInterface::class);
+        $getInventoryRequestFromOrder = $this->objectManager->get(GetInventoryRequestFromOrder::class);
+        $getDefaultSourceSelectionAlgorithmCode = $this->objectManager->get(GetDefaultSourceSelectionAlgorithmCodeInterface::class);
+        $itemRequestFactory = $this->objectManager->get(ItemRequestInterfaceFactory::class);
         $sourceCode = [];
 
         // Get the default source selection algorithm code
-        $algorithmCode = $this->getDefaultSourceSelectionAlgorithmCode->execute();
-        $requestItem = $this->itemRequestFactory->create([
+        $algorithmCode = $getDefaultSourceSelectionAlgorithmCode->execute();
+        $requestItem = $itemRequestFactory->create([
             'sku' => $item->getProduct()->getSku(),
             'qty' => $item->getQtyToShip()
         ]);
 
-        $inventoryRequest = $this->getInventoryRequestFromOrder->execute($orderId, [$requestItem]);
-        $sourceSelectionResult = $this->sourceSelectionService->execute(
+        $inventoryRequest = $getInventoryRequestFromOrder->execute($orderId, [$requestItem]);
+        $sourceSelectionResult = $sourceSelectionService->execute(
             $inventoryRequest,
             $algorithmCode
         );
@@ -759,12 +752,12 @@ class Config
 
     public function msiEnabled()
     {
-        if (!$this->moduleManager->isEnabled('Magento_Inventory')) {
-            return false;  // MSI module is not enabled
+        if (!$this->moduleManager->isEnabled('Magento_Inventory') ||
+            !$this->moduleManager->isEnabled('Magento_InventorySourceSelectionApi')) {
+            return false;  // MSI or Magento_InventorySourceSelectionApi module is not enabled
         }
 
-        $sources = $this->sourceRepository->getList();
-        if ($sources->getTotalCount() > 1) {
+        if ($this->getEnabledSources() > 1) {
             return true;  // More than one source, MSI is being used
         }
 
@@ -774,5 +767,14 @@ class Config
         }
 
         return false;  // MSI is not set up
+    }
+
+    public function getEnabledSources()
+    {
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('enabled', 1)   // only enabled sources
+            ->create();
+
+        return $this->sourceRepository->getList($searchCriteria)->getTotalCount();
     }
 }
